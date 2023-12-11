@@ -1,0 +1,1 @@
+docker run --rm --gpus all "DOCKER-IMAGE"
