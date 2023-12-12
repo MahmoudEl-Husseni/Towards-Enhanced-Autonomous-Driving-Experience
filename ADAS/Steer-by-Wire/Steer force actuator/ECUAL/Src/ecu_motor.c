@@ -9,8 +9,8 @@
 
 
 	/*	Time Handler Object	*/
- TIM_HandleTypeDef htim = {0};
-
+ TIM_HandleTypeDef htim = {0}; // HAL_PWM_START
+ float x = 0;
 const uint32_t porta_timer_channels [] =
 {
 		TIM_CHANNEL_1 , TIM_CHANNEL_2 , TIM_CHANNEL_3,TIM_CHANNEL_4,  // TIM2 Pins  0 , 1 ,2 , 3
@@ -28,7 +28,7 @@ const uint32_t portb_timer_channels [] =
 
 };
 
-static int16_t  log2fun (uint32_t num  )
+static uint8_t  log2fun (uint32_t num  )
 {
 	uint8_t res = 0 ;
 	while (num )
@@ -45,21 +45,15 @@ static void timers_init ( motor_t *motor )
 {
 	/*	declaration  variables   */
 
-	TIM_ClockConfigTypeDef  sClockSourceConfig = {0};
+	TIM_ClockConfigTypeDef sClockSourceConfig = {0};
     TIM_MasterConfigTypeDef sMasterConfig = {0};
-    TIM_OC_InitTypeDef	      sConfigOC = {0};
-
+    TIM_OC_InitTypeDef sConfigOC = {0};
     uint32_t PSC_Value = 0;
     uint32_t ARR_Value = 0;
     uint32_t tim_channel = 0  ;
 	//DWT_Delay_Init();
 
-    /****************************************
-     * 			LEFT PIN TIM CONFIG			*
-     ****************************************/
-
 	/*Enable RCC Port Clocks and Timers */
-
 	if (motor->ports[LEFT_PORT] == GPIOA )
 	{
 		/* Enable RCC Clock */
@@ -130,15 +124,17 @@ static void timers_init ( motor_t *motor )
 
 		 }
 
-		 tim_channel = portb_timer_channels[log2fun(motor->left_pins[PWM])] ;
+	tim_channel = portb_timer_channels[log2fun(motor->left_pins[PWM])] ;
+
+	/*	Determine CCRX According to Channel type (1,2,3,4) in left Pins */
+
+
 
 	}
 
 	else {/*Do Nothing*/}
-	//============================================================================================//
 
 
-	/*	Determine CCRX According to Channel type (1,2,3,4) in left Pins */
 
 	switch (tim_channel)
 	{
@@ -151,7 +147,7 @@ static void timers_init ( motor_t *motor )
 		break ;
 
 	case TIM_CHANNEL_3 :
-		motor->left_TIM_CCRx=&(motor->left_TIM_Instance->CCR3) ;
+		motor->left_TIM_CCRx=&(motor->left_TIM_Instance->CCR3);
 		break ;
 
 	case TIM_CHANNEL_4 :
@@ -159,8 +155,6 @@ static void timers_init ( motor_t *motor )
 		break ;
 
 	}
-
-
 	PSC_Value = (uint32_t) (CPU_FREQ / 3276800.0);
 	ARR_Value = (uint32_t) ((CPU_FREQ / (PWM_FREQ*(PSC_Value+1.0)))-1.0);
 
@@ -172,11 +166,11 @@ static void timers_init ( motor_t *motor )
 	htim.Init.CounterMode = TIM_COUNTERMODE_UP ;
 	htim.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	htim.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+
 	HAL_TIM_Base_Init(&(htim));
 
 	sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
 	HAL_TIM_ConfigClockSource(&htim, &sClockSourceConfig);
-	HAL_TIM_PWM_Init(&(htim));
 
 	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
 	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
@@ -188,24 +182,17 @@ static void timers_init ( motor_t *motor )
 	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
 	HAL_TIM_PWM_ConfigChannel(&htim, &sConfigOC, tim_channel);
 
-
+	HAL_TIM_PWM_Init(&(htim));
 
 	HAL_TIM_PWM_Start(&(htim),tim_channel );
 
 
+/**********************************************************
+ * 						RIGHT PIN TIMER CONFIG			  *								  *													  *
+ ********************************************************* */
 
 
-
-//==============================================================================================================//
-
-
-
-/****************************************
- * 			RIGHT PIN TIM CONFIG		*
-****************************************/
-
-
-	if (motor->ports[RIGHT_PORT] == GPIOA)  // -> Port A <- //
+	if (motor->ports[RIGHT_PORT] == GPIOA)
 	{
 
 		__HAL_RCC_GPIOA_CLK_ENABLE() ;
@@ -284,9 +271,8 @@ static void timers_init ( motor_t *motor )
 	}
 	else {/*Do Nothing */}
 
-//============================================================================================//
+//-----------------------------------------------------------------//
 
-	/*	Determine CCRX According to Channel type (1,2,3,4) in left Pins */
 	switch (tim_channel)
 		{
 		case TIM_CHANNEL_1 :
@@ -298,7 +284,7 @@ static void timers_init ( motor_t *motor )
 			break ;
 
 		case TIM_CHANNEL_3 :
-			motor->right_TIM_CCRx=&(motor->right_TIM_Instance->CCR3) ;
+			motor->right_TIM_CCRx=&(motor->right_TIM_Instance->CCR3);
 			break ;
 
 		case TIM_CHANNEL_4 :
@@ -306,7 +292,6 @@ static void timers_init ( motor_t *motor )
 			break ;
 
 		}
-
 		/*Calculate Prescaler and ARR*/
 
 	PSC_Value = (uint32_t) (CPU_FREQ / 3276800.0);
@@ -315,17 +300,16 @@ static void timers_init ( motor_t *motor )
 
 
 	/*	put values in htim object */
-
 	htim.Init.Prescaler = PSC_Value ;
 	htim.Init.Period = ARR_Value 	;
 	htim.Init.CounterMode = TIM_COUNTERMODE_UP ;
 	htim.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	htim.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+
 	HAL_TIM_Base_Init(&(htim));
 
 	sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
 	HAL_TIM_ConfigClockSource(&htim, &sClockSourceConfig);
-	HAL_TIM_PWM_Init(&(htim));
 
 	sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
 	sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
@@ -337,16 +321,17 @@ static void timers_init ( motor_t *motor )
 	sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
 	HAL_TIM_PWM_ConfigChannel(&htim, &sConfigOC, tim_channel);
 
-		/*---- Start PWM Channel -----*/
+	HAL_TIM_PWM_Init(&(htim));
 
 	HAL_TIM_PWM_Start(&(htim),tim_channel );
 
-
+//	HAL_GPIO_WritePin(motor->ports[LEFT_PORT], motor->left_pins[ENABLE], GPIO_PIN_SET);
+//	HAL_GPIO_WritePin(motor->ports[RIGHT_PORT], motor->right_pins[ENABLE], GPIO_PIN_SET);
 }
 
 
 
-std_return_type ecu_motor_init 	 (const motor_t *motor  , uint8_t speed)
+std_return_type ecu_motor_init 	 (const motor_t *motor  , uint32_t speed)
 {
 
 
@@ -356,9 +341,7 @@ std_return_type ecu_motor_init 	 (const motor_t *motor  , uint8_t speed)
 		ret = MOTOR_NOT_OK ;
 	}
 	else {
-			/* Init Timers used in PWM */
 
-		timers_init(motor) ;
 
 		/*Make GPIO pin Objects */
 			/* Right Pins 	*/
@@ -393,17 +376,21 @@ std_return_type ecu_motor_init 	 (const motor_t *motor  , uint8_t speed)
 		HAL_GPIO_Init(motor->ports[RIGHT_PORT], &right_enable_pin_obj ) ;
 		HAL_GPIO_Init(motor->ports[RIGHT_PORT], &right_PWM_pin_obj   ) ;
 
+		/* Init Timers used in PWM */
+
+		timers_init(motor) ;
+
 		/* Mapping speed from 1 -> 100 	*/
 
 		HAL_GPIO_WritePin(motor->ports[LEFT_PORT], motor->left_pins[ENABLE], GPIO_PIN_RESET) ;
 		HAL_GPIO_WritePin(motor->ports[LEFT_PORT], motor->right_pins[ENABLE], GPIO_PIN_RESET) ;
-
-
-		*(motor->left_TIM_CCRx) =((uint32_t)  (speed /100.0 * htim.Init.Period))   ;
-		*(motor->right_TIM_CCRx) =((uint32_t)  (speed /100.0 * htim.Init.Period))  ;
+//		*motor->left_TIM_CCRx =  (uint32_t)  (speed /100.0) * (htim.Init.Period)	 ;
+		*motor->left_TIM_CCRx =  0x0BFF	 ;
+		x=  ( speed /100.0 )  * (htim.Init.Period) ;
+		*motor->right_TIM_CCRx = (uint32_t) x   ;
 
 	//	HAL_GPIO_WritePin(motor->ports[LEFT_PORT], motor->left_pins[ENABLE], GPIO_PIN_RESET) ;
-		ret = MOTOR_OK ;
+
 	}
 	return ret ;
 }
