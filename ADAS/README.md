@@ -12,4 +12,4 @@
 
 
 > [!NOTE]
-> Codes are Compatible with STMcube MX  Platform 
+> Codes are Compatible with STMcube MX  Generated Code  
