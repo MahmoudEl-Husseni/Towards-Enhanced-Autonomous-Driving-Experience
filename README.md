@@ -108,5 +108,5 @@ Our project has two modes of operation:
   ├── AV #(Autonomous Vehicle)
   │   ├── README.md
   ├── Dashboard
-  │   ├── README.md
+  │   ├── AV-Cluster
 </pre>
