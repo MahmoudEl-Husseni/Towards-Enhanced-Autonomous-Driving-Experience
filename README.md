@@ -86,7 +86,6 @@ Our project has two modes of operation:
 
 
 
-![image](https://github.com/MahmoudEl-Husseni/Towards-Enhanced-Autonomous-Driving-Experience/assets/67474135/6f84026c-6ae2-45d1-96df-cb0d9a74b281)
 <p align="center">
   <img src="https://github.com/MahmoudEl-Husseni/Towards-Enhanced-Autonomous-Driving-Experience/assets/67474135/6f84026c-6ae2-45d1-96df-cb0d9a74b281" alt="Infotainment System" border="0">
 </p>
