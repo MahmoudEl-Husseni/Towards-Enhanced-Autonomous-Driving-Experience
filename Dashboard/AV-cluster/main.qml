@@ -24,6 +24,44 @@ Window {
 //        fillMode: Image.PreserveAspectFit
 //    }
 
+    Timer {
+        id: timer
+        interval: 2000 // Update every 2000 milliseconds (2 seconds)
+        running: true
+        repeat: true
+        property int currentGearIndex: 0
+
+        property var gears: [
+            { text: "P"},
+            { text: "N"},
+            { text: "D"},
+            { text: "R"}
+        ]
+        onTriggered: {
+            selected_gear.text = gears[currentGearIndex].text;
+            if (selected_gear.text === "P") {
+                _P.color = "#ffffff";
+            } else {
+                _P.color = "#7f7f7f";
+            }
+            if (selected_gear.text === "N") {
+                _N.color = "#ffffff";
+            } else {
+                _N.color = "#7f7f7f";
+            }
+            if (selected_gear.text === "D") {
+                _D.color = "#ffffff";
+            } else {
+                _D.color = "#7f7f7f";
+            }
+            if (selected_gear.text === "R") {
+                _R.color = "#ffffff";
+            } else {
+                _R.color = "#7f7f7f";
+            }
+            currentGearIndex = (currentGearIndex + 1) % gears.length; // Increment index and loop back to 0 after reaching 3
+        }
+    }
 
     Image {
         id: image
@@ -31,27 +69,6 @@ Window {
         source: "images/qit91mty-1 - Copy (2).png"
         fillMode: Image.PreserveAspectFit
     }
-
-//    Timer {
-//            id: timer
-//            interval: 125 // Update every 1000 milliseconds (1 second)
-//            running: true
-//            repeat: true
-//            onTriggered: {
-
-//                // Increment the current value
-//                currentspeedValue += 1
-
-//                // Update the label text
-//                speed_read.text = currentspeedValue
-
-//                // Stop the timer when the value reaches 260
-//                if (currentspeedValue >= 260) {
-//                    timer.stop()
-//                }
-//            }
-//        }
-
 
     Text {
         id: speed_read
@@ -67,9 +84,9 @@ Window {
     }
 
     Text {
-        id: text1
-        x: 974
-        y: 191
+        id: selected_gear
+        x: 979
+        y: 188
         width: 167
         height: 102
         color: "#ffffff"
@@ -83,13 +100,13 @@ Window {
 
     Label {
         id: tempLabel
-        x: 757
+        x: 747
         y: 10
         color: "#ffffff"
         text: "N/A"
         verticalAlignment: Text.AlignVCenter
-        font.styleName: "Black"
-        font.family: "Arial"
+        font.styleName: "Bold"
+        font.family: "Verdana"
         font.pointSize: 20
         font.weight: Font.Black
         font.bold: false
@@ -105,7 +122,7 @@ Window {
         text: qsTr("C")
         verticalAlignment: Text.AlignVCenter
         font.styleName: "Black"
-        font.family: "Arial"
+        font.family: "Verdana"
         font.pointSize: 15
         font.bold: false
         font.weight: Font.Black
@@ -155,8 +172,8 @@ Window {
 
     Image {
         id: highbeam
-        x: 786
-        y: 95
+        x: 630
+        y: 157
         width: 40
         height: 41
         source: "images/high-beam.png"
@@ -165,8 +182,8 @@ Window {
 
     Image {
         id: assistdisable
-        x: 628
-        y: 159
+        x: 773
+        y: 94
         width: 44
         height: 44
         source: "images/assist-disable.png"
@@ -194,18 +211,6 @@ Window {
     }
 
 
-    Text {
-        id: text2
-        x: 974
-        y: 309
-        width: 167
-        height: 35
-        color: "#7f7f7f"
-        text: qsTr("P N D R")
-        font.pixelSize: 25
-        horizontalAlignment: Text.AlignHCenter
-        font.weight: Font.Black
-    }
 
     //Upper-icons
 
@@ -314,11 +319,63 @@ Window {
         }
     }
 
+    Text {
+        id: _P
+        x: 997
+        y: 313
+        width: 31
+        height: 35
+        color: "#ffffff"
+        text: qsTr("P")
+        font.pixelSize: 30
+        horizontalAlignment: Text.AlignHCenter
+        font.weight: Font.Black
+    }
+
+    Text {
+        id: _N
+        x: 1029
+        y: 313
+        width: 31
+        height: 35
+        color: "#7f7f7f"
+        text: qsTr("N")
+        font.pixelSize: 30
+        horizontalAlignment: Text.AlignHCenter
+        font.weight: Font.Black
+    }
+
+    Text {
+        id: _D
+        x: 1061
+        y: 313
+        width: 31
+        height: 35
+        color: "#7f7f7f"
+        text: qsTr("D")
+        font.pixelSize: 30
+        horizontalAlignment: Text.AlignHCenter
+        font.weight: Font.Black
+    }
+
+    Text {
+        id: _R
+        x: 1091
+        y: 313
+        width: 31
+        height: 35
+        color: "#7f7f7f"
+        text: qsTr("R")
+        font.pixelSize: 30
+        horizontalAlignment: Text.AlignHCenter
+        font.weight: Font.Black
+    }
+
 }
 
 
 /*##^##
 Designer {
-    D{i:0;formeditorZoom:1.75}
+    D{i:0;formeditorZoom:0.75}D{i:16;locked:true}D{i:28}D{i:29}D{i:30}
 }
 ##^##*/
