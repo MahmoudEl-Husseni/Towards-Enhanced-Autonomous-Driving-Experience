@@ -105,10 +105,11 @@ if __name__=="__main__":
       )
     if N_SHARDS > 1:
         dataset = dataset.shard(N_SHARDS, 0)
-    p = mp.Pool(16)
+    p = mp.Pool(20)
     res = []
     for record_data in dataset:
       res.append(p.apply_async(process_scene, args=(record_data,)))
+
     p.close()
 
     for r in res:

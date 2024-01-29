@@ -1,13 +1,14 @@
 import numpy as np 
 from config import * 
 import tensorflow as tf
+
+
+
 def extract_agent_features(i, xy, velocity, yaw, gt_xy, is_avail, DISP) :
 
   # timesteps
   ts = np.arange(len(xy))
 
-  # Candidate Density
-  agent_disp = DISP[i]
 
   # average velocity
   total_vel = np.sqrt(velocity[:, 0]**2 + velocity[:, 1]**2)
@@ -361,8 +362,8 @@ def load_scene(record):
 
   Velocity = np.concatenate(
           (
-              np.expand_dims(np.concatenate((Past_velocity_x, Current_velocity_y), axis=1), axis=-1),
-              np.expand_dims(np.concatenate((Past_velocity_x, Current_velocity_y), axis=1), axis=-1),
+              np.expand_dims(np.concatenate((Past_velocity_x, Current_velocity_x), axis=1), axis=-1),
+              np.expand_dims(np.concatenate((Past_velocity_y, Current_velocity_y), axis=1), axis=-1),
           ),
           axis=-1,
       )
