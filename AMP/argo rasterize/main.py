@@ -1,5 +1,5 @@
 # ------------------------------------------
-# This file is part of waymo rasterize.
+# This file is part of argo rasterize.
 # File: main.py
 
 # Autor: Mahmoud ElHusseni
