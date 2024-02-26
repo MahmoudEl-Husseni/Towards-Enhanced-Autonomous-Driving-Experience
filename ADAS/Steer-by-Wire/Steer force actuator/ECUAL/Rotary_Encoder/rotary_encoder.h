@@ -15,11 +15,16 @@
 /* ------Section :Includes ------ */
 
 #include "../Util/util.h"
-
+#include "rotary_encoder_CONF.h"
 /* ------ Section  : User Defined Data types ------- */
 
- #define TIM_ENCODER   // Select from 2 Encoder Modes
 
+
+#ifdef TIM_ENCODER
+#warning "Using Timer Module  in Rotary Encoder delete   <rotary_encoder_CONF.h> to use custom  Implementation  "
+#else
+#warning "Using Custom Implementation in Rotary Encoder define   <rotary_encoder_CONF.h> to use timer module "
+#endif
 
 
 #ifndef TIM_ENCODER
@@ -40,11 +45,22 @@ typedef struct {
 
 #ifdef TIM_ENCODER
 /* ------ Section  : User Defined Data types ------- */
+typedef enum {
+ R_encoder_TIM1 ,
+ R_encoder_TIM2 ,
+ R_encoder_TIM3
+}R_encoder_TIM_selection_Timer_t ;
+
 typedef struct {
-	TIM_HandleTypeDef htim ;
+
+	R_encoder_TIM_selection_Timer_t Timer ; /*  @ R_encoder_TIM_selection_Timer	selected paramters 	*/
 }rotary_encoder_t;
 
-static void encoder_htim_par (rotary_encoder_t * r_encoder) ;
+
+/* ------ Section  : Private Functions  ------- */
+static void encoder_htim_par (TIM_HandleTypeDef * htim ,
+							  TIM_Encoder_InitTypeDef *sConf );
+
 #endif/* DEF_TIM_ENCODE */
 
 /* ------ Section  : User Defined Data types ------- */
@@ -55,7 +71,8 @@ typedef enum {
 	ENCODER_NULL_POINTER,
 	ENCODER_INIT_ERROR,
 	ENCODER_MASTER_INIT_ERROR,
-	ENCODER_START_ERROR
+	ENCODER_START_ERROR,
+	ENCODER_TIM_SELECTION_ERROR
 }encoder_status_t;
 
 typedef enum {
@@ -70,7 +87,7 @@ typedef enum {
 std_return_type ecu_rotary_encoder_intialize (const rotary_encoder_t * r_encoder) ;
 
 std_return_type ecu_rotary_encoder_measure_postion(const rotary_encoder_t *r_encoder ,
-												   encoder_rotation_status_t *encoder_rotation  );
+												   encoder_rotation_status_t *encoder_rotation  , int16_t *postion ) ;
 
 std_return_type ecu_rotary_encoder_return_postion_value (int32_t *postion_value);
 
