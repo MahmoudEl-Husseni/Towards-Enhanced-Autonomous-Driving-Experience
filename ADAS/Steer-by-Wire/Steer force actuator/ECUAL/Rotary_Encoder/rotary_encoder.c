@@ -7,8 +7,7 @@
 
 #include "rotary_encoder.h"
 
-#ifndef TIM_ENCODER
-#warning "Using Custom Implementation in Rotary Encoder define <TIM_ENCODER> to use timer module "
+
 //volatile int test __attribute__((section(".attia_array")))  = 5 ;
 int32_t  postion  ;
 
@@ -19,6 +18,8 @@ volatile int32_t prev_final_postion ;
 volatile int8_t last_state_signal ;
 volatile int8_t current_state_signal ;
 
+
+#ifndef TIM_ENCODER
 /*		detect all encoder states   */
 const int8_t Encoder_states[] = {
     0, -1, 1, 0,
@@ -153,10 +154,11 @@ std_return_type ecu_rotary_encoder_return_postion_value (int32_t *postion_value)
 	return  ret ;
 }
 #endif /* NOT_DEF_TIM_ENCODE */
-
 /*	---- use  encoder in timer module ----- */
+
 #ifdef TIM_ENCODER
-#warning "Using Timer Module  in Rotary Encoder delete  define <TIM_ENCODER> to use custom  Implementation  "
+
+
 std_return_type ecu_rotary_encoder_intialize ( const rotary_encoder_t * r_encoder) {
 
 	/*Error Handling of Null Pointers */
@@ -166,63 +168,134 @@ std_return_type ecu_rotary_encoder_intialize ( const rotary_encoder_t * r_encode
 		ret = ENCODER_NULL_POINTER ;
 	}
 	else{
+		TIM_HandleTypeDef htim ;
 		TIM_Encoder_InitTypeDef sConf = {0};
 		TIM_MasterConfigTypeDef sMaster = {0} ;
+		if (r_encoder->Timer == R_encoder_TIM1)
+		{
+			htim.Instance = TIM1 ;
+		}
+		else if (r_encoder->Timer == R_encoder_TIM2)
+		{
+			htim.Instance = TIM2 ;
+		}
+		else if (r_encoder->Timer == R_encoder_TIM3)
+		{
+			htim.Instance = TIM3 ;
+		}else {
+			ret = ENCODER_TIM_SELECTION_ERROR ;
+		}
 
-		encoder_htim_par (r_encoder) ;
+		encoder_htim_par (&htim , &sConf ) ;
 
-		sConf.EncoderMode = TIM_ENCODERMODE_TI12;
 
-		sConf.IC1Polarity = TIM_ICPOLARITY_RISING ;
-		// Input Filter to channel //
-		sConf.IC1Filter = 10 ;
-
-		sConf.IC1Selection= TIM_ICSELECTION_DIRECTTI;
-
-		sConf.IC1Prescaler = TIM_ICPSC_DIV1;
-
-		sConf.IC2Polarity = TIM_ICPOLARITY_RISING ;
-		// Input Filter to channel //
-		sConf.IC2Filter = 10 ;
-
-		sConf.IC2Selection= TIM_ICSELECTION_DIRECTTI;
-
-		sConf.IC2Prescaler = TIM_ICPSC_DIV1;
-		 if (HAL_TIM_Encoder_Init(&(r_encoder->htim), &sConf) != HAL_OK)
+		 if (HAL_TIM_Encoder_Init(&(htim), &sConf) != HAL_OK)
 		  {
 			 ret = ENCODER_INIT_ERROR ;
 		  }
+
 		 sMaster.MasterOutputTrigger = TIM_TRGO_RESET ;
 		 sMaster.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE ;
-		 if (HAL_TIMEx_MasterConfigSynchronization(&(r_encoder->htim), &sMaster) != HAL_OK)
+
+		 if (HAL_TIMEx_MasterConfigSynchronization(&(htim), &sMaster) != HAL_OK)
 		   {
 			ret = ENCODER_MASTER_INIT_ERROR ;
 		   }
-	}
-	if (HAL_TIM_Encoder_Start(&(r_encoder->htim), TIM_CHANNEL_ALL) != HAL_OK)
+
+	if (HAL_TIM_Encoder_Start(&(htim), TIM_CHANNEL_ALL) != HAL_OK)
 	{
 		ret = ENCODER_START_ERROR ;
 	}
+	ret = ENCODER_OK ;
+}//else
 	return ret ;
 }
 
-static void encoder_htim_par (rotary_encoder_t * r_encoder)
+static void encoder_htim_par (TIM_HandleTypeDef * htim ,
+							  TIM_Encoder_InitTypeDef *sConf )
 {
-	r_encoder->htim.Instance = TIM2 ;
 
-	r_encoder->htim.Init.Prescaler = 0 ;
 
-	r_encoder->htim.Init.CounterMode=TIM_COUNTERMODE_UP ;
+	htim->Init.Prescaler = 0 ;
 
-	r_encoder->htim.Init.AutoReloadPreload = 0xFFFF ; // (65535)
+	htim->Init.CounterMode=TIM_COUNTERMODE_UP ;
 
-	r_encoder->htim.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1 ;
+	htim->Init.Period = 0xFFFF ; // (65535)
 
-	r_encoder->htim.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+	htim->Init.ClockDivision = TIM_CLOCKDIVISION_DIV1 ;
+
+	htim->Init.RepetitionCounter = 0 ;
+
+	htim->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+
+	sConf->EncoderMode = TIM_ENCODERMODE_TI12;
+
+	sConf->IC1Polarity = TIM_ICPOLARITY_RISING ;
+		// Input Filter to channel //
+	sConf->IC1Filter = 10 ;
+
+	sConf->IC1Selection= TIM_ICSELECTION_DIRECTTI;
+
+	sConf->IC1Prescaler = TIM_ICPSC_DIV1;
+
+	sConf->IC2Polarity = TIM_ICPOLARITY_RISING ;
+		// Input Filter to channel //
+	sConf->IC2Filter = 10 ;
+
+	sConf->IC2Selection= TIM_ICSELECTION_DIRECTTI;
+
+	sConf->IC2Prescaler = TIM_ICPSC_DIV1;
 
 }
-std_return_type ecu_rotary_encoder_measure_postion(const rotary_encoder_t *r_encoder ,
-												   encoder_rotation_status_t *encoder_rotation  );
 
-std_return_type ecu_rotary_encoder_return_postion_value (int32_t *postion_value);
+std_return_type ecu_rotary_encoder_measure_postion(const rotary_encoder_t *r_encoder ,
+												   encoder_rotation_status_t *encoder_rotation  , int16_t *postion )
+{
+	std_return_type ret = ENCODER_NOT_OK ;
+	if (NULL == r_encoder ||NULL == encoder_rotation ){
+			ret = ENCODER_NULL_POINTER ;
+	}
+	else {
+		/*	---- Access the corresponding Timer to see the encoder Value ------	*/
+		if (r_encoder->Timer == R_encoder_TIM1)
+				{
+						*postion = ((TIM1->CNT)>>2) ;
+				}
+				else if (r_encoder->Timer == R_encoder_TIM2)
+				{
+					*postion = ((TIM2->CNT)>>2) ;
+				}
+				else if (r_encoder->Timer == R_encoder_TIM3)
+				{
+					*postion = ((TIM3->CNT)>>2) ;
+				}else {
+					ret = ENCODER_TIM_SELECTION_ERROR ;
+				}
+			if (ret !=ENCODER_TIM_SELECTION_ERROR )
+			{
+				ret = ENCODER_OK ;
+			}
+
+	}
+	return ret  ;
+}
+
+std_return_type ecu_rotary_encoder_return_postion_value (int32_t *postion_value)
+{
+	std_return_type ret = ENCODER_NOT_OK  ;
+
+	if (NULL == postion_value   )
+	{
+		ret = ENCODER_NOT_OK ;
+	}
+	else{
+
+
+		*postion_value = final_postion ;
+
+		ret = ENCODER_OK ;
+	}
+	return  ret ;
+}
+
 #endif /* DEF_TIM_ENCODE */
