@@ -40,7 +40,7 @@ typedef struct
 /*				timers_init Function Put values in this 					*/
 
 	/*************************************************************
-	 * 					PWM Pins on left and right 				 *
+	 * 	      PWM Pins on left and right                     *
 	 *************************************************************/
 
 					/*Left Pins */
@@ -62,12 +62,12 @@ typedef enum {
 }motor_status_t;
 
 /*	section : functions declaration */
-std_return_type ecu_motor_init 		 		 (const  motor_t *motor  ) ;
-std_return_type ecu_motor_move_left  	     ( motor_t *motor  ) ;
-std_return_type ecu_motor_move_right 		 ( motor_t *motor  ) ;
-std_return_type ecu_motor_brake		 		 ( motor_t *motor	) ;
-std_return_type ecu_motor_off 				 ( motor_t *motor	) ;
-std_return_type ecu_motor_change_speed 		 ( motor_t *motor , uint8_t _speed ) ;
+std_return_type ecu_motor_init 		 (const  motor_t *motor  ) ;
+std_return_type ecu_motor_move_left  	 ( motor_t *motor  ) ;
+std_return_type ecu_motor_move_right	 ( motor_t *motor  ) ;
+std_return_type ecu_motor_brake          ( motor_t *motor ) ;
+std_return_type ecu_motor_off 		 ( motor_t *motor) ;
+std_return_type ecu_motor_change_speed   ( motor_t *motor , uint8_t _speed ) ;
 
 
 
