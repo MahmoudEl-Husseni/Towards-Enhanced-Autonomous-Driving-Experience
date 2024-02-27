@@ -77,6 +77,34 @@ for Examlple in [rotary_encoder_CONF.h](ECUAL/Rotary_Encoder/rotary_encoder_CONF
  #define TIM_ENCODER   // Select from 2 Encoder Modes
 #endif /* ROTARY_ENCODER_ROTARY_ENCODER_CONF_H_ */
  ```
+### Dc Motor 
+
+   -  choose only the pins you wants to Connect int motor_t  
+   -  timir_init () ; Configure the timer and channel crossponding for this pins with no MAPPING
+
+### ***Timer Channel With No Mapping***
+
+| Tim    | CH1 |  CH2 | CH3 | CH4 |
+| :---:  | :---: | :---:  | | :---: | :---:  |
+| TIM1   | PA8  |  PA9  | PA10 | PA11 |
+| TIM2   | PA0 | PA1  | PA2 | PA3 |
+| TIM3   | PA6 | PA7  | PB0 | PB1 |
+| TIM4   | PB8 | PB9  | PB10 | PB11 |
+
+>[!NOTE]
+> Dont Use TIM4 bec it disbale the I2c Bus
+
+### Example of motor_t initializtaion 
+```c
+motor_t motor_1 = {
+		.left_pins[ENABLE] = GPIO_PIN_4 ,    
+		.left_pins[PWM] = GPIO_PIN_6 , 
+		.right_pins[ENABLE] = GPIO_PIN_5 ,
+		.right_pins[PWM] = GPIO_PIN_7 , 
+		speed = 50 
+};
+```
+> This Only Parameters you Need to Defines
 
 >[!CAUTION]
 >Make Sure that STM Cube Mx Copy the Necessary Files in the project
