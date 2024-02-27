@@ -57,7 +57,7 @@ For Example in [eeprom_config.h](ECUAL/EEPROM/eeprom_config.h) File  :
 | I2C1  | PB7  |  PB6  |
 |I2C2   | PB11 | PB0  |
 
-*Rotary Encoder 
+* Rotary Encoder 
     - Select  Encoder From 2 Modes 
         - Custom Implementation functions 
         - Timer in Encoder Mode
