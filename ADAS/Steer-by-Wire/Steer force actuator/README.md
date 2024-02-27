@@ -23,11 +23,10 @@ Steer Force Actuator System is Steer-by-wire Sub system responsible for taking t
 ![1122](https://github.com/Muhammad-Osama-9/Towards-Enhanced-Autonomous-Driving-Experience/assets/112892754/bc2d8295-c665-447c-898c-c8e7c57de1a3)
 
 ## Code Section Notes 
-1- EEPROM
-  - Select I2C bus From I2C1 or I2C2
-  - Select EEPROM Type ( AT24C01 - AT24C02 -AT24C04 -AT24C08-AT24C016)
+* EEPROM
+    - Select I2C bus From I2C1 or I2C2
+    - Select EEPROM Type ( AT24C01 - AT24C02 -AT24C04 -AT24C08-AT24C016)
 For Example in [eeprom_config.h](ECUAL/EEPROM/eeprom_config.h) File  :
-
 
 ```cpp
 #ifndef EEPROM_EEPROM_CONFIG_H_
