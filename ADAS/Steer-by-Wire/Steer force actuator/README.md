@@ -10,11 +10,11 @@ Steer Force Actuator System is Steer-by-wire Sub system responsible for taking t
 
 ### ***System Component***
 
-* ![STM32F103C8t6](https://www.st.com/resource/en/datasheet/stm32f103c8.pdf) 
+* [STM32F103C8t6](https://www.st.com/resource/en/datasheet/stm32f103c8.pdf) 
 * Dc Motor 775
 * HW-039 Motor Driver (High Amp)
 * Rotary Encoder (KY-040)
-* ![EEPROM AT24C04](https://ww1.microchip.com/downloads/en/devicedoc/doc0180.pdf)
+* [EEPROM AT24C04](https://ww1.microchip.com/downloads/en/devicedoc/doc0180.pdf)
 
 
 
@@ -26,10 +26,14 @@ Steer Force Actuator System is Steer-by-wire Sub system responsible for taking t
 1- EEPROM
   - Select I2C bus From I2C1 or I2C2
   - Select EEPROM Type ( AT24C01 - AT24C02 -AT24C04 -AT24C08-AT24C016)
-For Example in ![eeprom_config.h]() File  :
+For Example in [eeprom_config.h](ECUAL/EEPROM/eeprom_config.h) File  :
 
 '''cpp
-
+#inlcude <stdio.h>
+int main()
+{
+return  0 ; 
+}
 '''
 
 >[!CAUTION]
