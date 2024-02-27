@@ -28,13 +28,28 @@ Steer Force Actuator System is Steer-by-wire Sub system responsible for taking t
   - Select EEPROM Type ( AT24C01 - AT24C02 -AT24C04 -AT24C08-AT24C016)
 For Example in [eeprom_config.h](ECUAL/EEPROM/eeprom_config.h) File  :
 
-'''CPP
-#inlcude <stdio.h>
-int main()
-{
-return  0 ; 
-}
-'''
+
+```cpp
+#ifndef EEPROM_EEPROM_CONFIG_H_
+#define EEPROM_EEPROM_CONFIG_H_
+
+/*	 Config Macros for AT24Cxx EEPROM 	*/
+
+//#define _24C01
+//#define _24C02
+#define _24C04
+//#define _24C08
+//#define _24C016
+
+ /* Select I2C Bus selection  */
+
+#define I2C_1
+//#define I2C_2
+
+
+#endif /* EEPROM_EEPROM_CONFIG_H_ */
+```
+this Seelect 24C04 eeprom and I2C1 Bus 
 
 >[!CAUTION]
 >Make Sure that STM Cube Mx Copy the Necessary Files in the project
