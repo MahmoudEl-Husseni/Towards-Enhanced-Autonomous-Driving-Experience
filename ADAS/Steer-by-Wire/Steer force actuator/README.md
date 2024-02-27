@@ -54,14 +54,15 @@ For Example in [eeprom_config.h](ECUAL/EEPROM/eeprom_config.h) File  :
     - Select  Encoder From 2 Modes 
         - Custom Implementation functions 
         - Timer in Encoder Mode
-for Examlple in rotary_encoder_CONF.h
+for Examlple in rotary_encoder_CONF.h :
         
-        ```cpp
-          #ifndef ROTARY_ENCODER_ROTARY_ENCODER_CONF_H_
-             #define ROTARY_ENCODER_ROTARY_ENCODER_CONF_H_
-             #define TIM_ENCODER   // Select from 2 Encoder Modes
-          #endif /* ROTARY_ENCODER_ROTARY_ENCODER_CONF_H_ */
-       ```
+```cpp
+#ifndef ROTARY_ENCODER_ROTARY_ENCODER_CONF_H_
+ #define ROTARY_ENCODER_ROTARY_ENCODER_CONF_H_
+ #define TIM_ENCODER   // Select from 2 Encoder Modes
+#endif /* ROTARY_ENCODER_ROTARY_ENCODER_CONF_H_ */
+ ```
+
 >[!CAUTION]
 >Make Sure that STM Cube Mx Copy the Necessary Files in the project
 
