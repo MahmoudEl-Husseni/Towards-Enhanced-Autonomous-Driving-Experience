@@ -51,7 +51,7 @@ For Example in [eeprom_config.h](ECUAL/EEPROM/eeprom_config.h) File  :
 
 ***this Seelect 24C04 eeprom and I2C1 Bus***
 
-
+### Pins Diagram 
 | I2CBus | SDA |  SCL |
 | :---:   | :---:  | :---:   |
 | I2C1  | PB7  |  PB6  |
@@ -63,6 +63,7 @@ For Example in [eeprom_config.h](ECUAL/EEPROM/eeprom_config.h) File  :
         - Timer in Encoder Mode
 for Examlple in [rotary_encoder_CONF.h](ECUAL/Rotary_Encoder/rotary_encoder_CONF.h) File  :
 
+### Pins Diagram 
 | Tim    | CH1 |  CH2 |
 | :---:  | :---: | :---:  |
 | TIM1   | PA8  |  PA9  |
