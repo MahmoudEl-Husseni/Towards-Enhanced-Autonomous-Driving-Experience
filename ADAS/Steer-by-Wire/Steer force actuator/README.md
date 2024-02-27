@@ -23,9 +23,9 @@ Steer Force Actuator System is Steer-by-wire Sub system responsible for taking t
 ![1122](https://github.com/Muhammad-Osama-9/Towards-Enhanced-Autonomous-Driving-Experience/assets/112892754/bc2d8295-c665-447c-898c-c8e7c57de1a3)
 
 ## Code Section Notes 
-* EEPROM
-    - Select I2C bus From I2C1 or I2C2
-    - Select EEPROM Type ( AT24C01 - AT24C02 -AT24C04 -AT24C08-AT24C016)
+### EEPROM
+- Select I2C bus From I2C1 or I2C2
+- Select EEPROM Type ( AT24C01 - AT24C02 -AT24C04 -AT24C08-AT24C016)
 For Example in [eeprom_config.h](ECUAL/EEPROM/eeprom_config.h) File  :
 
 ```cpp
@@ -57,10 +57,12 @@ For Example in [eeprom_config.h](ECUAL/EEPROM/eeprom_config.h) File  :
 | I2C1  | PB7  |  PB6  |
 |I2C2   | PB11 | PB0  |
 
-* Rotary Encoder 
-    - Select  Encoder From 2 Modes 
-        - Custom Implementation functions 
-        - Timer in Encoder Mode
+### Rotary Encoder 
+   
+ - Select  Encoder From 2 Modes 
+ - Custom Implementation functions 
+ - Timer in Encoder Mode
+
 for Examlple in [rotary_encoder_CONF.h](ECUAL/Rotary_Encoder/rotary_encoder_CONF.h) File  :
 
 ### Pins Diagram 
