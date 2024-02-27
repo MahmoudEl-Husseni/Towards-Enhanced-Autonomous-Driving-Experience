@@ -62,7 +62,14 @@ For Example in [eeprom_config.h](ECUAL/EEPROM/eeprom_config.h) File  :
         - Custom Implementation functions 
         - Timer in Encoder Mode
 for Examlple in [rotary_encoder_CONF.h](ECUAL/Rotary_Encoder/rotary_encoder_CONF.h) File  :
-        
+
+| Tim    | CH1 |  CH2 |
+| :---:  | :---: | :---:  |
+| TIM1   | PA8  |  PA9  |
+| TIM2   | PA0 | PA1  |
+| TIM3   | PA6 | PA7  |
+
+
 ```cpp
 #ifndef ROTARY_ENCODER_ROTARY_ENCODER_CONF_H_
  #define ROTARY_ENCODER_ROTARY_ENCODER_CONF_H_
