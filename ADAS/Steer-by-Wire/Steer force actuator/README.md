@@ -54,7 +54,7 @@ For Example in [eeprom_config.h](ECUAL/EEPROM/eeprom_config.h) File  :
     - Select  Encoder From 2 Modes 
         - Custom Implementation functions 
         - Timer in Encoder Mode
-for Examlple in rotary_encoder_CONF.h :
+for Examlple in [rotary_encoder_CONF.h](ECUAL/Rotary_Encoder/rotary_encoder_CONF.h) File  :
         
 ```cpp
 #ifndef ROTARY_ENCODER_ROTARY_ENCODER_CONF_H_
