@@ -84,12 +84,12 @@ for Examlple in [rotary_encoder_CONF.h](ECUAL/Rotary_Encoder/rotary_encoder_CONF
 
 ### ***Timer Channel With No Mapping***
 
-| Tim    | CH1 |  CH2 | CH3 | CH4 |
-| :---:  | :---: | :---:  | | :---: | :---:  |
-| TIM1   | PA8  |  PA9  | PA10 | PA11 |
-| TIM2   | PA0 | PA1  | PA2 | PA3 |
-| TIM3   | PA6 | PA7  | PB0 | PB1 |
-| TIM4   | PB8 | PB9  | PB10 | PB11 |
+| Tim    | CH1   |  CH2   | CH3 | CH4 |
+| :---:  | :---: | :---:  |  :---: | :---:  |
+| TIM1   | PA8   |  PA9   | PA10 | PA11 |
+| TIM2   | PA0   | PA1    | PA2 | PA3 |
+| TIM3   | PA6   | PA7    | PB0 | PB1 |
+| TIM4   | PB8   | PB9    | PB10 | PB11 |
 
 >[!NOTE]
 > Dont Use TIM4 bec it disbale the I2c Bus
