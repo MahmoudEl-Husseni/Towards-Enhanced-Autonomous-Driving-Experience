@@ -48,7 +48,14 @@ For Example in [eeprom_config.h](ECUAL/EEPROM/eeprom_config.h) File  :
 
 #endif /* EEPROM_EEPROM_CONFIG_H_ */
 ```
+
 ***this Seelect 24C04 eeprom and I2C1 Bus***
+
+
+| I2CBus | SDA |  SCL |
+| :---:   | :---:  | :---:   |
+| I2C1  | PB7  |  PB6  |
+|I2C2   | PB11 | PB0  |
 
 *Rotary Encoder 
     - Select  Encoder From 2 Modes 
