@@ -18,6 +18,6 @@ Steer Force Actuator System is Steer-by-wire Sub system responsible for taking t
 
 >[!NOTE]
 > this file are Compatible with CMSIS API Functions
-> Make Sure that STM Cube Mx Copy the Necessary Files in the project
-> Remove the comments in "stmhalconfig.h"
+Make Sure that STM Cube Mx Copy the Necessary Files in the project
+Remove the comments in "stmhalconfig.h"
 
