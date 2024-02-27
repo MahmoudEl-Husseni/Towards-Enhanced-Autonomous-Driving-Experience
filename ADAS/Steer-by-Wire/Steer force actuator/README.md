@@ -82,7 +82,7 @@ for Examlple in [rotary_encoder_CONF.h](ECUAL/Rotary_Encoder/rotary_encoder_CONF
    -  choose only the pins you wants to Connect int motor_t  
    -  timir_init () ; Configure the timer and channel crossponding for this pins with no MAPPING
 
-### ***Timer Channel With No Mapping***
+### ***Timer Channel Pin COnfig  With No Mapping***
 
 | Tim    | CH1   |  CH2   | CH3 | CH4 |
 | :---:  | :---: | :---:  |  :---: | :---:  |
