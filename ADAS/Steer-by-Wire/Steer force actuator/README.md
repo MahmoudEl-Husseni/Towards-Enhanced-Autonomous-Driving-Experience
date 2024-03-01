@@ -42,11 +42,25 @@ For Example in [eeprom_config.h](ECUAL/EEPROM/eeprom_config.h) File  :
 
  /* Select I2C Bus selection  */
 
-#define I2C_1
-//#define I2C_2
+#define I2C_BUS_1
+#define I2C_BUS_2
 
 
 #endif /* EEPROM_EEPROM_CONFIG_H_ */
+```
+
+### Example of Initalization of EEPROM 
+
+```cpp
+eeprom_t eeprom1 = {
+		.address.A2 = 0 ,    /*   < Write the Logic Crossponding in PIN A2 in Ic  */
+		.address.A1 = 0 ,    /*   < Write the Logic Crossponding in PIN A1 in Ic  */
+		.address.A0 = 0 ,    /*   < Write the Logic Crossponding in PIN A0 in Ic  */
+		.I2C_bus = I2C_BUS_1  /*  < Select the I2C Bus */
+};
+
+eeprom_init(&eeprom1) ;  /* Cal EERPOM intialzation Function */
+
 ```
 
 ***this Seelect 24C04 eeprom and I2C1 Bus***
@@ -55,7 +69,7 @@ For Example in [eeprom_config.h](ECUAL/EEPROM/eeprom_config.h) File  :
 | I2CBus | SDA |  SCL |
 | :---:   | :---:  | :---:   |
 | I2C1  | PB7  |  PB6  |
-|I2C2   | PB11 | PB0  |
+|I2C2   | PB11 | PB10  |
 
 ### Rotary Encoder 
    
@@ -100,10 +114,10 @@ for Examlple in [rotary_encoder_CONF.h](ECUAL/Rotary_Encoder/rotary_encoder_CONF
 ```c
 motor_t motor_1 = {
 		.left_pins[ENABLE] = GPIO_PIN_4 ,    
-		.left_pins[PWM] = GPIO_PIN_6 , 
+		.left_pins[PWM] = GPIO_PIN_6 , 		/*< Make sure in PWM  Pins to Choose from Table Above   */
 		.right_pins[ENABLE] = GPIO_PIN_5 ,
-		.right_pins[PWM] = GPIO_PIN_7 , 
-		speed = 50 
+		.right_pins[PWM] = GPIO_PIN_7 ,         /*< Make sure in PWM  Pins to Choose from Table Above   */
+		speed = 50 				/*< Duty Cycle of PWM Signal  */
 };
 ```
 > This Only Parameters you Need to Defines
