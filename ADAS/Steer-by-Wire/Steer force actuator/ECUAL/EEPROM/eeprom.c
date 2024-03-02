@@ -169,7 +169,7 @@ std_return_type eeprom_reset(const eeprom_t *eeprom_instance){
 			ret = EEPROM_NULL_POINTER ;
 		}else {
 
-			for (uint8_t i=0 ; i<32 ; i ++ )
+			for (uint8_t i=0 ; i<EEPROM_NUM_PAGE ; i ++ )
 			{
 					ret = eeprom_page_erase(eeprom_instance, i);
 					if (ret!= EEPROM_OK )
