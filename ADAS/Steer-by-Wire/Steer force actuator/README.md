@@ -1,5 +1,5 @@
 # Steer Force Actuator 
-> This File are Compatible with CMSIS API Function Genrated by STMCube Mx ide  written f
+> This File are Compatible with CMSIS API Function Genrated by STMCube Mx ide 
 
 ## Description 
 Steer Force Actuator System is Steer-by-wire Sub system responsible for taking the order from Driver and Interface with the vichele  
