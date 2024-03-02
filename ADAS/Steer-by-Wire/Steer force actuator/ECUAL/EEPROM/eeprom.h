@@ -69,15 +69,8 @@
 
 #define MEM_ADD_SIZE 2
 
+#define EEPROM_ERASE_DEFAULT_VAL 0xFF
 
-
-#if   !defined(I2C_1) && !defined (I2C_2)
-#warning " I2C Bus Not Selected  Please Select I2C_1 or I2C_2 Buses  in < eeprom.h > file "
-#endif // I2C Selection
-
-#if   defined(I2C_1) && defined (I2C_2)
-#error " (I2C_1 and I2C_2) MACROS   Selected , Please Select I2C_1 or I2C_2  Bus in < eeprom.h > file "
-#endif // I2C Selection
 /* ----  User define data types : Section     ---- */
 
 
@@ -88,7 +81,10 @@ EEPROM_INIT_ERROR,
 EEPROM_ADDRESS_NOT_FOUND,
 EEPROM_ADDRESS_OUT_OF_BOUND,
 EEPROM_READ_ERROR,
-EEPROM_WRITE_ERROR
+EEPROM_WRITE_ERROR,
+EEPROM_I2C_BUS_SELECTION_ERROR,
+EEPROM_PAGE_OUT_OF_BOUND ,
+EEPROM_PAGE_ERASE_ERROR
 }EEPROM_status_t;
 
 typedef union  {
@@ -96,27 +92,29 @@ typedef union  {
 		uint8_t A0 :1 ;  // <- write Logic on pin A0
 		uint8_t A1 :1 ;  // <- write Logic on pin A1
 		uint8_t A2 :1 ;  // <- write Logic on pin A2
+		uint8_t RESERVED :5 ; // <- No Value Put here
 	};
 	uint8_t address_pins_total  ;
 }eeprom_address_pins_t;
 
+
 typedef  struct {
 	eeprom_address_pins_t address ;
+	uint8_t I2C_bus  ;
 
 }eeprom_t;
 
 /* ---- Function Declaration : Section 	*/
-std_return_type eeprom_init(const eeprom_t *eeprom_instace);
-std_return_type eeprom_reset(const eeprom_t *eeprom_instace);
-std_return_type eeprom_read(const eeprom_t *eeprom_instace , uint16_t address ,
+std_return_type eeprom_init(const eeprom_t *eeprom_instance);
+std_return_type eeprom_reset(const eeprom_t *eeprom_instance);
+std_return_type eeprom_read(const eeprom_t *eeprom_instance , uint16_t address ,
 							uint16_t offset,
 							uint32_t *read_value) ;
-std_return_type eeprom_write(const eeprom_t *eeprom_instace  ,uint16_t address
+std_return_type eeprom_write(const eeprom_t *eeprom_instance  ,uint16_t address
 							, uint16_t offset ,
 							uint32_t write_value );
-/* ----- Private Functions ----*/
-static void byte_to_uint32 (uint8_t *ptr , uint32_t *num ) ;
-static void uint32_to_byte (uint8_t *ptr , uint32_t *num );
 
+std_return_type eeprom_page_erase (const eeprom_t *eeprom_instance ,
+									uint8_t page_number);
 
 #endif /* EEPROM_EEPROM_H_ */
