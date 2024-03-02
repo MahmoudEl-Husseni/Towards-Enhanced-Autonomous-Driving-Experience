@@ -40,10 +40,10 @@ For Example in [eeprom_config.h](ECUAL/EEPROM/eeprom_config.h) File  :
 //#define _24C08
 //#define _24C016
 
- /* Select I2C Bus selection  */
+ /*  I2C Bus selection  */
 
-#define I2C_BUS_1
-#define I2C_BUS_2
+#define I2C_BUS_1 0
+#define I2C_BUS_2 1
 
 
 #endif /* EEPROM_EEPROM_CONFIG_H_ */
