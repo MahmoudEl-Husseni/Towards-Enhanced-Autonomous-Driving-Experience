@@ -163,6 +163,7 @@ for Examlple in [rotary_encoder_CONF.h](ECUAL/Rotary_Encoder/rotary_encoder_CONF
  #define TIM_ENCODER   // Select from 2 Encoder Modes
 #endif /* ROTARY_ENCODER_ROTARY_ENCODER_CONF_H_ */
  ```
+
 ### Dc Motor 
 
    -  choose only the pins you wants to Connect int motor_t  
