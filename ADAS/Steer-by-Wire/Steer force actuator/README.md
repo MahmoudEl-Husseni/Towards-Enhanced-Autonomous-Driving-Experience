@@ -184,11 +184,12 @@ for Examlple in [rotary_encoder_CONF.h](ECUAL/Rotary_Encoder/rotary_encoder_CONF
 ### Example of motor_t initializtaion 
 ```c
 motor_t motor_1 = {
-		.left_pins[ENABLE] = GPIO_PIN_4 ,    
-		.left_pins[PWM] = GPIO_PIN_6 , 		/*< Make sure in PWM  Pins to Choose from Table Above   */
-		.right_pins[ENABLE] = GPIO_PIN_5 ,
-		.right_pins[PWM] = GPIO_PIN_7 ,         /*< Make sure in PWM  Pins to Choose from Table Above   */
-		speed = 50 				/*< Duty Cycle of PWM Signal  */
+		.ports[LEFT_PORT]  = GPIOA ,		  /* !< Left Pins Port Selection  */
+		.left_pins[ENABLE] = GPIO_PIN_4 ,	  /* !< Left enable Pin  Selection  */
+		.left_pins[PWM] = GPIO_PIN_6 ,		  /* !< Left PWM Pin  Selection  */
+		.right_pins[ENABLE] = GPIO_PIN_5 ,        /* !< Right enable Pin  Selection  */
+		.right_pins[PWM] = GPIO_PIN_7 ,           /* !< Right PWM Pin  Selection  */
+		.ports[RIGHT_PORT] = GPIOA ,              /* !< right Pins Port Selection  */
 };
 ```
 > This Only Parameters you Need to Defines
