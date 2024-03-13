@@ -1,5 +1,5 @@
 # ------------------------------------------
-# This file is part of waymo rasterize.
+# This file is part of argo rasterize.
 # File: config.py
 
 # Autor: Mahmoud ElHusseni
@@ -24,7 +24,7 @@ N_PAST = 60
 raster_size = [224, 224]
 
 # MAP PARAMS
-road_colors = ['#37dd9c',
+road_colors = ['#37dd9c', 
                 '#c49665',
                 '#8c278a',
                 '#3d342c',
@@ -36,11 +36,11 @@ road_colors = ['#37dd9c',
                 '#6a86a8',
                 '#f5e940']
 
-map_object_type = {
+map_object_type = {         
     'vehicle'           : 0,
     'bus'               : 1,
     'bike'              : 2,
-    'cyclist' 		 : 2,
+    'cyclist' 		 : 2,   
     'pedestrian'        : 2,
     'motorcyclist'      : 3,
     'riderless_bicycle' : 4,

@@ -1,5 +1,5 @@
 # ------------------------------------------
-# This file is part of waymo rasterize.
+# This file is part of argo rasterize.
 # File: render.py
 
 # Autor: Mahmoud ElHusseni
@@ -14,6 +14,7 @@ if 'av2-api/src' not in sys.path:
 
 import os
 import numpy as np
+from PIL import Image
 from tqdm import tqdm
 import multiprocessing
 from pathlib import Path
@@ -66,6 +67,10 @@ def extract_raster(scene, out_path):
   data = data.reshape(fig.canvas.get_width_height()[::-1] + (3,))
 
   map = data[150:1040, 250:1750]
+
+  # resize map to raster size
+  map = np.array(Image.fromarray(map).resize((224, 224)))
+
 
   data = {
       'raster' : map, 
