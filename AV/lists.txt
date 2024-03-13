@@ -1,0 +1,48 @@
+# COMPLETED 
+- Perception: 
+	- Object Detection. 
+	- Drivable Area Segmentation.
+	- Lane Line Detection.
+- Localization: 
+	- Retrieve (x, y) position from GNSS. 
+	- Unscented Kalman Filter.
+------------------------------------------------------------------------------------
+# WORKING ON
+- Perception: 
+	- Traffic Sign Detection testing on CARLA. 	# not critical to do now.
+	- Pavement Distress detection.
+- Localization:
+	- Comparing localization model with and without IMU reads.
+- Mapping: 
+	- Having point cloud data out of carla.
+	- align detected objects from perception module with lidar data points.
+- Planning: 
+	- Motion Planning: 
+		- building graph.
+		- applying any minimum distance algorithm (A*). -> we should have a path of waypoints from source to destination.
+- Controller: 
+	- Search how it is done.
+------------------------------------------------------------------------------------
+# TODO (MUST DO TO HAVE AUTONOMOUS VEHICLE)
+- Perception:
+	- agent motion prediction.
+	- Object Tracking.
+- Planning: 
+	- Behviour Planning.
+	- Decision planning.
+- Controller
+------------------------------------------------------------------------------------
+# BONUS (ANY OTHER ADDITIONAL MODULES)
+- Perception: 
+
+------------------------------------------------------------------------------------
+we should set a timetable: as we have a tough deadline
+before 15 april: 
+- Mapping. 	      10 march - 10 april  	-> (30 days)
+- Motion Planning.    10 march - 25 march 	-> (15 days)
+- Behaviour Planning. 25 march - 10 april. 	-> (15 days)
+- Controller. 	      10 march - 10 april	-> (30 days)
+
+45 days: from 15 april - 1 june 
+integration after eid
+
