@@ -1,0 +1,5 @@
+torch-geometric
+kornia
+colorama
+universal-pathlib
+plotly

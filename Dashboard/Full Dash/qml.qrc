@@ -1,0 +1,116 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>images/navigation.png</file>
+        <file>images/music.png</file>
+        <file>images/settings.png</file>
+        <file>images/bluetooth.png</file>
+        <file>images/signal-status.png</file>
+        <file>images/weather.png</file>
+        <file>images/telephone.png</file>
+        <file>images/thermostat.png</file>
+        <file>images/signal.png</file>
+        <file>images/play.png</file>
+        <file>images/pause.png</file>
+        <file>images/next-button.png</file>
+        <file>images/back-button.png</file>
+        <file>images/sound-waves.png</file>
+        <file>images/clock.png</file>
+        <file>images/calendar.png</file>
+        <file>images/number-one.png</file>
+        <file>images/number-2.png</file>
+        <file>images/number-3.png</file>
+        <file>images/number-four.png</file>
+        <file>images/number-5.png</file>
+        <file>images/six.png</file>
+        <file>images/seven.png</file>
+        <file>images/number-8.png</file>
+        <file>images/number-9.png</file>
+        <file>images/zero.png</file>
+        <file>images/call.png</file>
+        <file>images/love-birds.png</file>
+        <file>images/hand.png</file>
+        <file>images/love.png</file>
+        <file>MyDisplayArea.qml</file>
+        <file>images/map.png</file>
+        <file>images/logo.png</file>
+        <file>images/nightMode.png</file>
+        <file>animation/musicWave.gif</file>
+        <file>file.mp3</file>
+        <file>main2.qml</file>
+        <file>fonts/Exo2-Bold.ttf</file>
+        <file>fonts/Exo2-ExtraBold.ttf</file>
+        <file>fonts/Exo2-Medium.ttf</file>
+        <file>fonts/fonts.txt</file>
+        <file>fonts/OpenSans-Bold.ttf</file>
+        <file>fonts/OpenSans-BoldItalic.ttf</file>
+        <file>fonts/OpenSans-ExtraBold.ttf</file>
+        <file>fonts/OpenSans-ExtraBoldItalic.ttf</file>
+        <file>fonts/OpenSans-Italic.ttf</file>
+        <file>fonts/OpenSans-Light.ttf</file>
+        <file>fonts/OpenSans-LightItalic.ttf</file>
+        <file>fonts/OpenSans-Medium.ttf</file>
+        <file>fonts/OpenSans-MediumItalic.ttf</file>
+        <file>fonts/OpenSans-Regular.ttf</file>
+        <file>fonts/OpenSans-SemiBold.ttf</file>
+        <file>fonts/OpenSans-SemiBoldItalic.ttf</file>
+        <file>images/Set 1/01.png</file>
+        <file>images/Set 1/02.png</file>
+        <file>images/Set 1/03.png</file>
+        <file>images/Set 1/04.png</file>
+        <file>images/Set 1/05.png</file>
+        <file>images/Set 1/06.png</file>
+        <file>images/Set 1/07.png</file>
+        <file>images/Set 1/08.png</file>
+        <file>images/Set 1/09.png</file>
+        <file>images/Set 1/10.png</file>
+        <file>images/Set 1/11.png</file>
+        <file>images/Set 1/12.png</file>
+        <file>images/Set 1/13.png</file>
+        <file>images/Set 1/14.png</file>
+        <file>images/Set 1/15.png</file>
+        <file>images/Set 1/16.png</file>
+        <file>images/Set 1/17.png</file>
+        <file>images/Set 1/18.png</file>
+        <file>images/Set 1/19.png</file>
+        <file>images/Set 1/20.png</file>
+        <file>images/Set 1/21.png</file>
+        <file>images/Set 1/22.png</file>
+        <file>images/Set 1/23.png</file>
+        <file>images/Set 1/24.png</file>
+        <file>images/Set 1/25.png</file>
+        <file>images/Set 1/26.png</file>
+        <file>images/Set 1/27.png</file>
+        <file>images/Set 1/28.png</file>
+        <file>images/Set 1/29.png</file>
+        <file>images/Set 1/30.png</file>
+        <file>images/Set 1/31.png</file>
+        <file>images/Set 1/32.png</file>
+        <file>images/Set 1/33.png</file>
+        <file>images/Set 1/34.png</file>
+        <file>images/Set 1/35.png</file>
+        <file>images/Set 1/36.png</file>
+        <file>images/Set 1/37.png</file>
+        <file>images/Set 1/38.png</file>
+        <file>images/Set 1/39.png</file>
+        <file>images/Set 1/40.png</file>
+        <file>images/Adaptive-off.png</file>
+        <file>images/Adaptive-on.png</file>
+        <file>images/assist-disable.png</file>
+        <file>images/base_1.png</file>
+        <file>images/Camera-screen.png</file>
+        <file>images/dark-mode.png</file>
+        <file>images/door-open.png</file>
+        <file>images/google-maps.png</file>
+        <file>images/high-beam.png</file>
+        <file>images/left.png</file>
+        <file>images/light-mode.png</file>
+        <file>images/Low-bat.png</file>
+        <file>images/low-beam.png</file>
+        <file>images/Parking-break.png</file>
+        <file>images/right.png</file>
+        <file>images/seat-belt.png</file>
+        <file>images/speed-limit.png</file>
+        <file>images/steering-error.png</file>
+    </qresource>
+</RCC>
