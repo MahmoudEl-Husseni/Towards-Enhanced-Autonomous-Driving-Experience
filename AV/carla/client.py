@@ -7,7 +7,7 @@
 # For a copy, see <https://opensource.org/licenses/MIT>.
 
 # Allows controlling a vehicle with a keyboard. For a simpler and more
-# documented example, please take a look at tutorial.py.
+# documented example, please take يش_ضa look at tutorial.py.
 
 """
 Welcome to CARLA manual control.
@@ -59,8 +59,12 @@ import os
 import sys
 import cv2
 import glob
-from pygame_client import *
+from queue import Queue
+
+from config import *
 from sensors import *
+from mapping import HDMap
+from pygame_client import *
 
 try:
     sys.path.append(glob.glob('../carla/dist/carla-*%d.%d-%s.egg' % (
@@ -81,14 +85,14 @@ import carla
 
 from carla import ColorConverter as cc
 
-import argparse
-import collections
-import datetime
-import logging
+import re
 import math
 import random
-import re
 import weakref
+import logging
+import datetime
+import argparse
+import collections
 
 try:
     import pygame
@@ -156,9 +160,11 @@ def get_actor_display_name(actor, truncate=250):
 # ==============================================================================
 # -- World ---------------------------------------------------------------------
 # ==============================================================================
+
 class World(object):
     def __init__(self, carla_world, hud, args):
         self.world = carla_world
+        self.hdmap = HDMap()
         self.actor_role_name = args.rolename
         try:
             self.map = self.world.get_map()
@@ -167,13 +173,22 @@ class World(object):
             print('  The server could not send the OpenDRIVE (.xodr) file:')
             print('  Make sure it exists, has the same name of your town, and is correct.')
             sys.exit(1)
+        
+
         self.hud = hud
         self.player = None
 
-        self.gnss_sensor = None
         self.imu_sensor = None
-        self.camera_manager = None
+        self.gnss_sensor = None
         self.lidar_sensor = None
+        self.depth_camera = None
+        self.camera_manager = None
+
+        self.ego_q = None
+        self.depth_q = None
+        self.lanes_q = None
+        self.bboxes_q = None
+        self.da_q = Queue(maxsize = DA_MAX_QUEUE_SIZE)
 
         self._weather_presets = find_weather_presets()
         self._weather_index = 0
@@ -230,17 +245,22 @@ class World(object):
         # Set up the sensors.
         self.gnss_sensor = GnssSensor(self.player)
         self.imu_sensor = IMUSensor(self.player)
-        self.camera_manager = CameraManager(self.player, self.hud, self._gamma)
+        self.camera_manager = CameraManager(self.player, self.hud, self._gamma, self.lanes_q, self.bboxes_q, self)
         self.camera_manager.transform_index = cam_pos_index
         self.camera_manager.set_sensor(notify=False, force_respawn=True)
 
 
-        self.lidar_sensor = LidarSensor(self.player, self.hud)
+        self.lidar_sensor = LidarSensor(self.player, self.hud, self.da_q)
         self.lidar_sensor.transform_index = cam_pos_index
         self.lidar_sensor.set_sensor(notify=False, force_respawn=True)
 
+        self.depth_camera = DepthCamera(self.player, self.hud, self.depth_q)
+        self.depth_camera.transform_index = cam_pos_index
+        self.depth_camera.set_sensor(notify=False, force_respawn=True)
+
+
         self.view = 0
-        self.views = [self.camera_manager, self.lidar_sensor, None] # camera - lidar - map
+        self.views = [self.camera_manager, self.lidar_sensor, self.depth_camera, self.hdmap] # camera - lidar - map
 
         actor_type = get_actor_display_name(self.player)
         self.hud.notification(actor_type)
@@ -258,11 +278,19 @@ class World(object):
 
     def render(self, display):
         if self.views[self.view] is not None: 
+            if self.view==len(self.views)-1: 
+                self.hdmap.generate_map(self.ego_q, 
+                                        self.camera_manager.bboxes_q, 
+                                        self.camera_manager.lanes_q, 
+                                        self.lidar_sensor.da_q, 
+                                        self.camera_manager.camera_2_world_map)
+                
             self.views[self.view].render(display)
             self.hud.render(display)
 
     def next_view(self) : 
         self.view = (self.view + 1) % len(self.views)
+        print(self.view)
 
     def destroy_sensors(self):
         self.camera_manager.sensor.destroy()
@@ -272,6 +300,7 @@ class World(object):
     def destroy(self):
         actors = [
             self.camera_manager.sensor,
+            self.depth_camera.sensor,
             self.lidar_sensor.sensor,
             self.gnss_sensor.sensor,
             self.imu_sensor.sensor,
@@ -280,6 +309,7 @@ class World(object):
         for actor in actors:
             if actor is not None:
                 actor.destroy()
+
 
 # ==============================================================================
 # -- game_loop() ---------------------------------------------------------------
@@ -302,6 +332,27 @@ def game_loop(args):
         hud = HUD(args.width, args.height)
         
         world = client.get_world() 
+
+        # spawn vehicles
+        # n_vehicles = 30
+        # bp = world.get_blueprint_library().filter("*vehicle*")
+        # spawn_points = world.get_map().get_spawn_points()
+        # number_of_spawn_points = len(spawn_points)
+        # batch = []
+        # for i in range(n_vehicles) : 
+        #     if n >= args.number_of_vehicles:
+        #         break
+        #     blueprint = random.choice(blueprints)
+        #     if blueprint.has_attribute('color'):
+        #         color = random.choice(blueprint.get_attribute('color').recommended_values)
+        #         blueprint.set_attribute('color', color)
+        #     if blueprint.has_attribute('driver_id'):
+        #         driver_id = random.choice(blueprint.get_attribute('driver_id').recommended_values)
+        #         blueprint.set_attribute('driver_id', driver_id)
+        #     blueprint.set_attribute('role_name', 'autopilot')
+
+        #     batch.append(SpawnActor(blueprint, transform).then(SetAutopilot(FutureActor, True, traffic_manager.get_port())))
+
         world = World(world, hud, args)
         
         controller = KeyboardControl(world, args.autopilot)
@@ -312,6 +363,23 @@ def game_loop(args):
             if controller.parse_events(client, world, clock):
                 return
             world.tick(clock)
+
+
+            # get ego vehicle location
+            ego_vehicle = world.player.get_transform()
+            ego_vehicle = [ego_vehicle.location.x, ego_vehicle.location.y, ego_vehicle.rotation.yaw]
+
+            if world.ego_q is None: 
+                world.ego_q = Queue(maxsize = EGO_MAX_QUEUE_SIZE)
+
+            if not world.ego_q.full() : 
+                world.ego_q.put(ego_vehicle)
+            else : 
+                world.ego_q.get()
+                world.ego_q.put(ego_vehicle)
+            
+            
+            
             world.render(display)
             pygame.display.flip()
 
