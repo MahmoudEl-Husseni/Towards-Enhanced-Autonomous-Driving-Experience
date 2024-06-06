@@ -7,3 +7,6 @@ AV/visual perception/*h5
 *.onnx
 *.pth
 AV/carla_out/*/images
+*.mp4
+*.webm
+*.egg
