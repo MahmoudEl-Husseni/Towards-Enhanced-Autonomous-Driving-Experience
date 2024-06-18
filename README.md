@@ -26,12 +26,14 @@ Our approach is to design a smart vehicle that features:
   * Planning road from source to destination.​
 
 * **ADAS**:​
+  * Instrument Cluster.
   * Steer-by-wire.​
   * Adaptive headlight.​
   * Infotainment system.​
 
 * **Driver Emergency  alert**​
-  * Dashboard Alert System.​
+  * Cluster Alert.​
+  * Speed Limit Detector.
   * Sleep alert.
 
 -------
