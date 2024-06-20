@@ -65,6 +65,7 @@ import random
 import re
 import weakref
 import json
+import time
 from utils import stm_steering_map
 
 
@@ -107,13 +108,15 @@ try:
     from pygame.locals import K_EQUALS
 
 except ImportError:
-    raise RuntimeError('cannot import pygame, make sure pygame package is installed')
+    raise RuntimeError(
+        'cannot import pygame, make sure pygame package is installed')
 
 
 try:
     import numpy as np
 except ImportError:
-    raise RuntimeError('cannot import numpy, make sure numpy package is installed')
+    raise RuntimeError(
+        'cannot import numpy, make sure numpy package is installed')
 
 
 # ==============================================================================
@@ -125,8 +128,9 @@ VID_RANGE = np.linspace(0.0, 1.0, VIRIDIS.shape[0])
 
 def find_weather_presets():
     rgx = re.compile('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)')
-    name = lambda x: ' '.join(m.group(0) for m in rgx.finditer(x))
-    presets = [x for x in dir(carla.WeatherParameters) if re.match('[A-Z].+', x)]
+    def name(x): return ' '.join(m.group(0) for m in rgx.finditer(x))
+    presets = [x for x in dir(carla.WeatherParameters)
+               if re.match('[A-Z].+', x)]
     return [(getattr(carla.WeatherParameters, x), name(x)) for x in presets]
 
 
@@ -135,7 +139,7 @@ def get_actor_display_name(actor, truncate=250):
     return (name[:truncate - 1] + u'\u2026') if len(name) > truncate else name
 
 
-class Controller : 
+class Controller:
     '''
     Received Commands
 
@@ -154,61 +158,67 @@ class Controller :
         - Right Blinker
         - Left Blinker
     '''
-    def __init__(self, stm, world, client) : 
-        # Controller data 
+
+    def __init__(self, stm, world, client):
+        # Controller data
         self._control = carla.VehicleControl()
         self._lights = carla.VehicleLightState.NONE
-        
+
         self._autopilot_enabled = False
         self.stm = stm
         self.world = world
-        self.map_1 = stm_steering_map(-540 ,540  , -1 , 1 )
-        
+        self.map_1 = stm_steering_map(-540, 540, -1, 1)
+
         self.stm_gear = 0.0
         self.steering_stm = 0.0
-        self.throttleCan=0.0
-        self.BrakeCan=0.0
+        self.throttleCan = 0.0
+        self.BrakeCan = 0.0
         self.rightsignal = 0.0
         self.leftsignal = 0.0
         self._steer_cache = 0.0
 
-    def parse_events (self, client, world, clock) : 
+    def parse_events(self, client, world, clock):
+        self.stm.send(
+            self._autopilot_enabled,
+            (3.6 * math.sqrt(self.world.player.get_velocity().x**2 +
+             self.world.player.get_velocity().y**2 + self.world.player.get_velocity().z**2)),
+            "",
+            self.world.player.get_control().gear,
+            self.leftsignal,
+            self.rightsignal,
+            self.BrakeCan
+        )
 
         # Parse Events from Hardware
-        import time
-        t = time.time()
         decoded_data = self.stm.receive()
         self.stm_gear = decoded_data.get('gear', self.stm_gear)
         self.steering_stm = decoded_data.get('steering', self.steering_stm)
         self.steering_stm = float(self.steering_stm)
 
         # steering_stm = self.map_1.do_map(steering_stm)
-        
-        
-        self.throttleCan = decoded_data.get('throttle', self.throttleCan * 255) / 255
+
+        self.throttleCan = decoded_data.get(
+            'throttle', self.throttleCan * 255) / 255
 
         self.BrakeCan = decoded_data.get('brake', self.BrakeCan * 255) / 255
         self.BrakeCan = float(self.BrakeCan)
 
-        self.rightsignal=decoded_data.get('rightBlinker', self.rightsignal)
-        self.leftsignal= decoded_data.get('leftBlinker', self.leftsignal)
+        self.rightsignal = decoded_data.get('rightBlinker', self.rightsignal)
+        self.leftsignal = decoded_data.get('leftBlinker', self.leftsignal)
 
-
-
-        t = time.time()
         # parse Events from Keyboardh
-        if isinstance(self._control , carla.VehicleControl):
+        if isinstance(self._control, carla.VehicleControl):
             current_lights = self._lights
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return True
-            
+
             elif event.type == pygame.KEYUP:
-                
+
                 if self._is_quit_shortcut(event.key):
                     return True
-                
+
                 elif event.key == K_BACKSPACE:
                     if self._autopilot_enabled:
                         self.world.player.set_autopilot(False)
@@ -216,12 +226,12 @@ class Controller :
                         self.world.player.set_autopilot(True)
                     else:
                         self.world.restart()
-                
+
                 elif event.key == K_TAB:
-                    if self.world.views[self.world.view] is not None: 
+                    if self.world.views[self.world.view] is not None:
                         self.world.views[self.world.view].toggle_camera()
                     # self.world.camera_manager.toggle_camera()
-                elif event.key == K_n: 
+                elif event.key == K_n:
                     self.world.next_view()
                 elif event.key == K_r and not (pygame.key.get_mods() & KMOD_CTRL):
                     # self.world.camera_manager.toggle_recording()
@@ -236,7 +246,7 @@ class Controller :
                         self.client.start_recorder("manual_recording.rec")
                         self.world.recording_enabled = True
                         self.world.hud.notification("Recorder is ON")
-                
+
                 elif event.key == K_p and (pygame.key.get_mods() & KMOD_CTRL):
                     # stop recorder
                     self.client.stop_recorder()
@@ -247,28 +257,29 @@ class Controller :
                     # disable autopilot
                     self._autopilot_enabled = False
                     self.world.player.set_autopilot(self._autopilot_enabled)
-                    self.world.hud.notification("Replaying file 'manual_recording.rec'")
+                    self.world.hud.notification(
+                        "Replaying file 'manual_recording.rec'")
                     # replayer
-                    self.client.replay_file("manual_recording.rec", self.world.recording_start, 0, 0)
+                    self.client.replay_file(
+                        "manual_recording.rec", self.world.recording_start, 0, 0)
                     self.world.camera_manager.set_sensor()
-                
-                
-                
-                if isinstance(self._control , carla.VehicleControl):
+
+                if isinstance(self._control, carla.VehicleControl):
                     if event.key == K_q:
                         self._control.gear = 1 if self._control.reverse else -1
                     elif event.key == K_m:
                         self._control.manual_gear_shift = not self._control.manual_gear_shift
                         self._control.gear = self.world.player.get_control().gear
                         self.world.hud.notification('%s Transmission' %
-                                               ('Manual' if self._control.manual_gear_shift else 'Automatic'))
+                                                    ('Manual' if self._control.manual_gear_shift else 'Automatic'))
                     elif self._control.manual_gear_shift and event.key == K_COMMA:
                         self._control.gear = max(-1, self._control.gear - 1)
                     elif self._control.manual_gear_shift and event.key == K_PERIOD:
                         self._control.gear = self._control.gear + 1
                     elif event.key == K_p and not pygame.key.get_mods() & KMOD_CTRL:
                         self._autopilot_enabled = not self._autopilot_enabled
-                        self.world.player.set_autopilot(self._autopilot_enabled)
+                        self.world.player.set_autopilot(
+                            self._autopilot_enabled)
                         self.world.hud.notification(
                             'Autopilot %s' % ('On' if self._autopilot_enabled else 'Off'))
                     elif event.key == K_l and pygame.key.get_mods() & KMOD_CTRL:
@@ -298,45 +309,34 @@ class Controller :
                         current_lights ^= carla.VehicleLightState.LeftBlinker
                     elif event.key == K_x:
                         current_lights ^= carla.VehicleLightState.RightBlinker
-        
+
         if not self._autopilot_enabled:
             if isinstance(self._control, carla.VehicleControl):
-                self._parse_vehicle_keys(pygame.key.get_pressed() , 
-                                         self.throttleCan , 
-                                         self.BrakeCan , 
-                                         self.steering_stm, 
+                self._parse_vehicle_keys(pygame.key.get_pressed(),
+                                         self.throttleCan,
+                                         self.BrakeCan,
+                                         self.steering_stm,
                                          clock.get_time())
                 self._control.reverse = self._control.gear < 0
                 # Set automatic control-related vehicle lights
                 if self._control.brake:
                     current_lights |= carla.VehicleLightState.Brake
-                else: # Remove the Brake flag
+                else:  # Remove the Brake flag
                     current_lights &= carla.VehicleLightState.All ^ carla.VehicleLightState.Brake
                 if self._control.reverse:
                     current_lights |= carla.VehicleLightState.Reverse
-                else: # Remove the Reverse flag
+                else:  # Remove the Reverse flag
                     current_lights &= carla.VehicleLightState.All ^ carla.VehicleLightState.Reverse
-                if current_lights != self._lights: # Change the light state only if necessary
+                if current_lights != self._lights:  # Change the light state only if necessary
                     self._lights = current_lights
-                    self.world.player.set_light_state(carla.VehicleLightState(self._lights))
-    
-            self.world.player.apply_control(self._control)
-        
+                    self.world.player.set_light_state(
+                        carla.VehicleLightState(self._lights))
 
-        t = time.time()
-        self.stm.send(
-                self._autopilot_enabled,
-                (3.6 * math.sqrt(self.world.player.get_velocity().x**2 + self.world.player.get_velocity().y**2 + self.world.player.get_velocity().z**2)), 
-                "" ,
-                self.world.player.get_control().gear,
-                self.leftsignal,
-                self.rightsignal,
-                self.BrakeCan
-                )
-    def _parse_vehicle_keys(self, keys , throttleCan , BrakeCan , steering_stm, milliseconds):
+            self.world.player.apply_control(self._control)
+
+    def _parse_vehicle_keys(self, keys, throttleCan, BrakeCan, steering_stm, milliseconds):
 
         self._control.throttle = throttleCan
-
 
         self._control.brake = BrakeCan
 
@@ -358,7 +358,8 @@ class Controller :
             self._control.speed = .01
             self._rotation.yaw += 0.08 * milliseconds
         if keys[K_UP] or keys[K_w]:
-            self._control.speed = self.world.player_max_speed_fast if pygame.key.get_mods() & KMOD_SHIFT else self.world.player_max_speed
+            self._control.speed = self.world.player_max_speed_fast if pygame.key.get_mods(
+            ) & KMOD_SHIFT else self.world.player_max_speed
         self._control.jump = keys[K_SPACE]
         self._rotation.yaw = round(self._rotation.yaw, 1)
         self._control.direction = self._rotation.get_forward_vector()
@@ -368,7 +369,6 @@ class Controller :
         return (key == K_ESCAPE) or (key == K_q and pygame.key.get_mods() & KMOD_CTRL)
 
 
-
 # ==============================================================================
 # -- KeyboardControl -----------------------------------------------------------
 # ==============================================================================
@@ -376,6 +376,7 @@ class Controller :
 
 class KeyboardControl(object):
     """Class that handles keyboard input."""
+
     def __init__(self, world, start_in_autopilot):
         self._autopilot_enabled = start_in_autopilot
         if isinstance(world.player, carla.Vehicle):
@@ -413,14 +414,14 @@ class KeyboardControl(object):
                 elif event.key == K_h or (event.key == K_SLASH and pygame.key.get_mods() & KMOD_SHIFT):
                     world.hud.help.toggle()
                 elif event.key == K_TAB:
-                    if world.views[world.view] is not None: 
+                    if world.views[world.view] is not None:
                         world.views[world.view].toggle_camera()
                     # world.camera_manager.toggle_camera()
                 elif event.key == K_c and pygame.key.get_mods() & KMOD_SHIFT:
                     world.next_weather(reverse=True)
                 elif event.key == K_c:
                     world.next_weather()
-                elif event.key == K_n: 
+                elif event.key == K_n:
                     world.next_view()
                 elif event.key == K_r and not (pygame.key.get_mods() & KMOD_CTRL):
                     world.camera_manager.toggle_recording()
@@ -443,22 +444,26 @@ class KeyboardControl(object):
                     # disable autopilot
                     self._autopilot_enabled = False
                     world.player.set_autopilot(self._autopilot_enabled)
-                    world.hud.notification("Replaying file 'manual_recording.rec'")
+                    world.hud.notification(
+                        "Replaying file 'manual_recording.rec'")
                     # replayer
-                    client.replay_file("manual_recording.rec", world.recording_start, 0, 0)
+                    client.replay_file("manual_recording.rec",
+                                       world.recording_start, 0, 0)
                     world.camera_manager.set_sensor()
                 elif event.key == K_MINUS and (pygame.key.get_mods() & KMOD_CTRL):
                     if pygame.key.get_mods() & KMOD_SHIFT:
                         world.recording_start -= 10
                     else:
                         world.recording_start -= 1
-                    world.hud.notification("Recording start time is %d" % (world.recording_start))
+                    world.hud.notification(
+                        "Recording start time is %d" % (world.recording_start))
                 elif event.key == K_EQUALS and (pygame.key.get_mods() & KMOD_CTRL):
                     if pygame.key.get_mods() & KMOD_SHIFT:
                         world.recording_start += 10
                     else:
                         world.recording_start += 1
-                    world.hud.notification("Recording start time is %d" % (world.recording_start))
+                    world.hud.notification(
+                        "Recording start time is %d" % (world.recording_start))
                 if isinstance(self._control, carla.VehicleControl):
                     if event.key == K_q:
                         self._control.gear = 1 if self._control.reverse else -1
@@ -506,22 +511,25 @@ class KeyboardControl(object):
 
         if not self._autopilot_enabled:
             if isinstance(self._control, carla.VehicleControl):
-                self._parse_vehicle_keys(pygame.key.get_pressed(), clock.get_time())
+                self._parse_vehicle_keys(
+                    pygame.key.get_pressed(), clock.get_time())
                 self._control.reverse = self._control.gear < 0
                 # Set automatic control-related vehicle lights
                 if self._control.brake:
                     current_lights |= carla.VehicleLightState.Brake
-                else: # Remove the Brake flag
+                else:  # Remove the Brake flag
                     current_lights &= carla.VehicleLightState.All ^ carla.VehicleLightState.Brake
                 if self._control.reverse:
                     current_lights |= carla.VehicleLightState.Reverse
-                else: # Remove the Reverse flag
+                else:  # Remove the Reverse flag
                     current_lights &= carla.VehicleLightState.All ^ carla.VehicleLightState.Reverse
-                if current_lights != self._lights: # Change the light state only if necessary
+                if current_lights != self._lights:  # Change the light state only if necessary
                     self._lights = current_lights
-                    world.player.set_light_state(carla.VehicleLightState(self._lights))
+                    world.player.set_light_state(
+                        carla.VehicleLightState(self._lights))
             elif isinstance(self._control, carla.WalkerControl):
-                self._parse_walker_keys(pygame.key.get_pressed(), clock.get_time(), world)
+                self._parse_walker_keys(
+                    pygame.key.get_pressed(), clock.get_time(), world)
             world.player.apply_control(self._control)
 
     def _parse_vehicle_keys(self, keys, milliseconds):
@@ -563,7 +571,8 @@ class KeyboardControl(object):
             self._control.speed = .01
             self._rotation.yaw += 0.08 * milliseconds
         if keys[K_UP] or keys[K_w]:
-            self._control.speed = world.player_max_speed_fast if pygame.key.get_mods() & KMOD_SHIFT else world.player_max_speed
+            self._control.speed = world.player_max_speed_fast if pygame.key.get_mods(
+            ) & KMOD_SHIFT else world.player_max_speed
         self._control.jump = keys[K_SPACE]
         self._rotation.yaw = round(self._rotation.yaw, 1)
         self._control.direction = self._rotation.get_forward_vector()
@@ -610,22 +619,27 @@ class HUD(object):
         t = world.player.get_transform()
         v = world.player.get_velocity()
         c = world.player.get_control()
-        
+
         vehicles = world.world.get_actors().filter('vehicle.*')
-        
+
         self._info_text = [
             'Server:  % 16.0f FPS' % self.server_fps,
             'Client:  % 16.0f FPS' % clock.get_fps(),
             '',
-            'Vehicle: % 20s' % get_actor_display_name(world.player, truncate=20),
+            'Vehicle: % 20s' % get_actor_display_name(
+                world.player, truncate=20),
             'Map:     % 20s' % world.map.name,
-            'Simulation time: % 12s' % datetime.timedelta(seconds=int(self.simulation_time)),
+            'Simulation time: % 12s' % datetime.timedelta(
+                seconds=int(self.simulation_time)),
             '',
-            'Speed:   % 15.0f km/h' % (3.6 * math.sqrt(v.x**2 + v.y**2 + v.z**2)),
+            'Speed:   % 15.0f km/h' % (3.6 *
+                                       math.sqrt(v.x**2 + v.y**2 + v.z**2)),
             'Accelero: (%5.1f,%5.1f,%5.1f)' % (world.imu_sensor.accelerometer),
             'Gyroscop: (%5.1f,%5.1f,%5.1f)' % (world.imu_sensor.gyroscope),
-            'Location:% 20s' % ('(% 5.1f, % 5.1f)' % (t.location.x, t.location.y)),
-            'GNSS:% 24s' % ('(% 2.6f, % 3.6f)' % (world.gnss_sensor.lat, world.gnss_sensor.lon)),
+            'Location:% 20s' % ('(% 5.1f, % 5.1f)' %
+                                (t.location.x, t.location.y)),
+            'GNSS:% 24s' % ('(% 2.6f, % 3.6f)' %
+                            (world.gnss_sensor.lat, world.gnss_sensor.lon)),
             'Height:  % 18.0f m' % t.location.z,
             '']
         if isinstance(c, carla.VehicleControl):
@@ -646,8 +660,10 @@ class HUD(object):
             'Number of vehicles: % 8d' % len(vehicles)]
         if len(vehicles) > 1:
             self._info_text += ['Nearby vehicles:']
-            distance = lambda l: math.sqrt((l.x - t.location.x)**2 + (l.y - t.location.y)**2 + (l.z - t.location.z)**2)
-            vehicles = [(distance(x.get_location()), x) for x in vehicles if x.id != world.player.id]
+            def distance(l): return math.sqrt((l.x - t.location.x) **
+                                              2 + (l.y - t.location.y)**2 + (l.z - t.location.z)**2)
+            vehicles = [(distance(x.get_location()), x)
+                        for x in vehicles if x.id != world.player.id]
             for d, vehicle in sorted(vehicles):
                 if d > 200.0:
                     break
@@ -676,26 +692,35 @@ class HUD(object):
                     break
                 if isinstance(item, list):
                     if len(item) > 1:
-                        points = [(x + 8, v_offset + 8 + (1.0 - y) * 30) for x, y in enumerate(item)]
-                        pygame.draw.lines(display, (255, 136, 0), False, points, 2)
+                        points = [(x + 8, v_offset + 8 + (1.0 - y) * 30)
+                                  for x, y in enumerate(item)]
+                        pygame.draw.lines(
+                            display, (255, 136, 0), False, points, 2)
                     item = None
                     v_offset += 18
                 elif isinstance(item, tuple):
                     if isinstance(item[1], bool):
-                        rect = pygame.Rect((bar_h_offset, v_offset + 8), (6, 6))
-                        pygame.draw.rect(display, (255, 255, 255), rect, 0 if item[1] else 1)
+                        rect = pygame.Rect(
+                            (bar_h_offset, v_offset + 8), (6, 6))
+                        pygame.draw.rect(display, (255, 255, 255),
+                                         rect, 0 if item[1] else 1)
                     else:
-                        rect_border = pygame.Rect((bar_h_offset, v_offset + 8), (bar_width, 6))
-                        pygame.draw.rect(display, (255, 255, 255), rect_border, 1)
+                        rect_border = pygame.Rect(
+                            (bar_h_offset, v_offset + 8), (bar_width, 6))
+                        pygame.draw.rect(
+                            display, (255, 255, 255), rect_border, 1)
                         f = (item[1] - item[2]) / (item[3] - item[2])
                         if item[2] < 0.0:
-                            rect = pygame.Rect((bar_h_offset + f * (bar_width - 6), v_offset + 8), (6, 6))
+                            rect = pygame.Rect(
+                                (bar_h_offset + f * (bar_width - 6), v_offset + 8), (6, 6))
                         else:
-                            rect = pygame.Rect((bar_h_offset, v_offset + 8), (f * bar_width, 6))
+                            rect = pygame.Rect(
+                                (bar_h_offset, v_offset + 8), (f * bar_width, 6))
                         pygame.draw.rect(display, (255, 255, 255), rect)
                     item = item[0]
                 if item:  # At this point has to be a str.
-                    surface = self._font_mono.render(item, True, (255, 255, 255))
+                    surface = self._font_mono.render(
+                        item, True, (255, 255, 255))
                     display.blit(surface, (8, v_offset))
                 v_offset += 18
         self._notifications.render(display)
@@ -738,12 +763,14 @@ class FadingText(object):
 
 class HelpText(object):
     """Helper class to handle text output using pygame"""
+
     def __init__(self, font, width, height):
         lines = __doc__.split('\n')
         self.font = font
         self.line_space = 18
         self.dim = (780, len(lines) * self.line_space + 12)
-        self.pos = (0.5 * width - 0.5 * self.dim[0], 0.5 * height - 0.5 * self.dim[1])
+        self.pos = (0.5 * width - 0.5 *
+                    self.dim[0], 0.5 * height - 0.5 * self.dim[1])
         self.seconds_left = 0
         self.surface = pygame.Surface(self.dim)
         self.surface.fill((0, 0, 0, 0))
@@ -759,4 +786,3 @@ class HelpText(object):
     def render(self, display):
         if self._render:
             display.blit(self.surface, self.pos)
-
