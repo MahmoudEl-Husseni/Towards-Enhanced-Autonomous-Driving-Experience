@@ -96,5 +96,6 @@
         <file>images/right_side_blue.png</file>
         <file>images/right_side_red.png</file>
         <file>images/right_side_yellow.png</file>
+        <file>images/Right_Side.png</file>
     </qresource>
 </RCC>

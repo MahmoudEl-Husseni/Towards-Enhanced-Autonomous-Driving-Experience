@@ -2,6 +2,7 @@
 #include "pythonrunner.h"
 #include <QFileInfo>
 #include <QDebug>
+#include <QCoreApplication>
 
 PythonRunner::PythonRunner(QObject *parent) : QObject(parent) {
     connect(&process, &QIODevice::readyRead, this, &PythonRunner::readStandardOutput);
@@ -10,14 +11,17 @@ PythonRunner::PythonRunner(QObject *parent) : QObject(parent) {
 }
 
 void PythonRunner::runPythonScript() {
-    // QString scriptPath = "/home/av/Desktop/AutoSpectra/AutoSpectra-cmake/Spotify.py";
-   QString scriptPath = "D:/GProject/Dashboard/Github Project/AutoSpectra/Spotify.py";
-//    QString scriptPath2 = "D:/GProject/Dashboard/Drowsiness_Detection-master/Drowsiness_Detection.py";
-    process.setWorkingDirectory(QFileInfo(scriptPath).absolutePath());
-    process.start("python", QStringList() << scriptPath);
+    QString appDir = QCoreApplication::applicationDirPath();
+    // Construct the relative path to the Python script
+    QString scriptRelativePath = "../../Spotify.py";
+    QString scriptPath = appDir + "/" + scriptRelativePath;
 
-//    process.setWorkingDirectory(QFileInfo(scriptPath2).absolutePath());
-//    process.start("python", QStringList() << scriptPath2);
+    QFileInfo fileInfo(scriptPath);
+    QString absoluteScriptPath = fileInfo.absoluteFilePath();
+
+    process.setWorkingDirectory(fileInfo.absolutePath());
+    process.start("python", QStringList() << absoluteScriptPath);
+
 
     if (!process.waitForStarted()) {
         qDebug() << "Failed to start the script process:" << process.errorString();

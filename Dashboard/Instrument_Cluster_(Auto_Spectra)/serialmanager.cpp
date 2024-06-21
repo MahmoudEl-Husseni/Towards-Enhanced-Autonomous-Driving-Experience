@@ -2,11 +2,13 @@
 #include <QJsonObject>
 #include <QDebug>
 #include "serialmanager.h"
+int temperature=0;
+int sendPort=12345;
 using namespace std;
 SerialManager::SerialManager(QObject *parent)
     : QObject(parent)
 {
-    udpSocket.bind(QHostAddress::Any, 12345); // Use appropriate port number
+    udpSocket.bind(QHostAddress::Any, sendPort); // Use appropriate port number
     bool m_serial_is_available = true;
     QString m_serial_uno_port_name;
     //  For each available serial port
@@ -69,7 +71,7 @@ void SerialManager::readSerial()
             else if (jsonDoc.isObject())
             {
                 QJsonObject jsonObj = jsonDoc.object();
-                int temperature = jsonObj["temperature"].toInt();
+                temperature = jsonObj["temperature"].toInt();
                 int humidity = jsonObj["humidity"].toInt();
                 int door = jsonObj["door"].toInt();
                 QString gear = jsonObj["gear"].toString();
@@ -100,6 +102,6 @@ void SerialManager::sendGearOverUDP(const QString &gear)
     QByteArray jsonData = jsonDoc.toJson();
 
     // Send the JSON data over UDP
-    udpSocket.writeDatagram(jsonData, QHostAddress("192.168.1.5"), 12345); // Replace with the IP and port of the Python PC
+    udpSocket.writeDatagram(jsonData, QHostAddress("192.168.1.14"), 12345); // Replace with the IP and port of the Python PC
 }
 

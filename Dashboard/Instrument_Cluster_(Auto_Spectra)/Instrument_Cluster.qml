@@ -156,6 +156,14 @@ Item {
 
 
 
+    Image {
+        id: right_side_none
+        source: "images/Right_Side.png"
+        x: 616
+        y: 113
+        opacity: 1
+        visible: speed_read.text <= 0 || hasRealData== 0
+    }
 
     Image {
         id: right_side_blue
@@ -163,7 +171,7 @@ Item {
         x: 616
         y: 113
         opacity: 1
-        visible: true
+        visible: speed_read.text > 0 && speed_read.text < 60 && hasRealData== 1
     }
     Image {
         id: right_side_red
@@ -171,7 +179,7 @@ Item {
         x: 616
         y: 113
         opacity: 1
-        visible: false
+        visible: speed_read.text >= 120 && hasRealData== 1
     }
     Image {
         id: right_side_yellow
@@ -179,9 +187,18 @@ Item {
         x: 616
         y: 113
         opacity: 1
-        visible: false
+        visible: speed_read.text >= 60 && speed_read.text < 120 && hasRealData== 1
     }
 
+
+    Image {
+        id: left_side_center1
+        x: 696
+        y: 194
+        opacity: 1
+        source: "images/center.png"
+        rotation: -173.341
+    }
 
     Image {
         id: left_side
@@ -264,7 +281,7 @@ Item {
         color: "#d0d0d0"
         smooth: true
         x: 782
-        y: 389
+        y: 379
         opacity: 1
     }
 
@@ -280,7 +297,7 @@ Item {
         color: "#e7bf8c"
         smooth: true
         x: 791
-        y: 239
+        y: 231
         opacity: 1
         visible: true
 
@@ -387,7 +404,7 @@ Item {
         color: "#e7bf8c"
         smooth: true
         x: 791
-        y: 239
+        y: 231
         opacity: 1
         visible: false
 
@@ -546,7 +563,13 @@ Item {
         x: 77
         y: 17
         opacity: 1
+        property bool colorFlag: false
     }
+    ColorOverlay {
+            anchors.fill: door_open
+            source: door_open
+            color: door_open.colorFlag ? "#7b7b7b" : "transparent"
+        }
 
     Image {
         id: low_bat
@@ -865,12 +888,14 @@ Item {
 
     Connections {
         target: serialManager
-        onJsonDataParsed: {
+        function onJsonDataParsed(temperature, humidity, door, gear) {
             tempLabel.text = ""+temperature;
 
             if(door){
+                door_open.colorFlag = true;
                 door_open.visible=false;
             }else{
+                door_open.colorFlag = false;
                 door_open.visible=true;
             }
 
@@ -951,7 +976,7 @@ Item {
 
     Connections{
         target: SpotifyReceiver
-        onSpotifiyReceivedData:{
+        function onSpotifiyReceivedData( Track_Name, Artist_Name, Album_Name, Album_Img_URL){
             if(Album_Name===""){
                 artistImage.visible=false
                 playingNow.visible=false
@@ -963,26 +988,8 @@ Item {
                 songTitle.text=Track_Name
                 artistName.text=Artist_Name
             }
-
-            if(speed_read.text>0&&speed_read.text<60){
-                right_side_blue.visible=true
-                right_side_yellow.visible=false
-                right_side_red.visible=false
-            }
-            if (speed_read.text>=60&&speed_read.text<120){
-                right_side_blue.visible=false
-                right_side_yellow.visible=true
-                right_side_red.visible=false
-            }
-            if(speed_read.text>=120){
-                right_side_blue.visible=false
-                right_side_yellow.visible=false
-                right_side_red.visible=true
-            }
         }
     }
-
-
 
     Connections{
         target:carDataReceiver
@@ -1005,7 +1012,7 @@ Item {
             if(sign===1){
                 gear.visible=false;
                 gearAuto.visible=true;
-                auto_selected_gear.text=autoGear;
+                auto_selected_gear.text=AGear;
                 if (auto_selected_gear.text === "P") {
                     auto_drive_mode.text="Parking"
                     auto_P.color = "#ffffff";
@@ -1027,7 +1034,11 @@ Item {
                 if (auto_selected_gear.text === "R") {
                     auto_drive_mode.text="Reversing"
                     auto_R.color = "#ffffff";
+                    camera.start() // Start the camera
+                    viewfinder.visible = true // Show the viewfinder
                 } else {
+                camera.stop() // Stop the camera (not start)
+                viewfinder.visible = false // Hide the viewfinder
                     auto_R.color = "#7f7f7f";
                 }
             }
@@ -1056,19 +1067,8 @@ Item {
             }else{
                 parking_break.visible=false;
             }
-            if(auto_selected_gear.text === "R"){
-                drive_mode.text="Reversing"
-                camera.start() // Start the camera
-                viewfinder.visible = true // Show the viewfinder
-            }else{
-                camera.stop() // Stop the camera (not start)
-                viewfinder.visible = false // Hide the viewfinder
-
-            }
         }
     }
-
-
 
     Image {
         id: wanring_massage
@@ -1326,7 +1326,7 @@ Item {
     Text {
         id: miles
         x: 824
-        y: 389
+        y: 379
         opacity: 1
         color: "#7f7f7f"
         text: "mi"
@@ -1334,5 +1334,6 @@ Item {
         smooth: true
         font.family: "Futura"
     }
+
 
 }
