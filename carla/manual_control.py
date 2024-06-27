@@ -183,9 +183,17 @@ class World(object):
     def tick(self, clock):
         self.hud.tick(self, clock)
 
-    def render(self, display):
-        self.camera_manager.render(display)
-        self.hud.render(display)
+    def render(self, surface, image, blend=False):
+        # self.camera_manager.render(display)
+        # self.hud.render(display)
+        array = np.frombuffer(image.raw_data, dtype=np.dtype("uint8"))
+        array = np.reshape(array, (image.height, image.width, 4))
+        array = array[:, :, :3]
+        array = array[:, :, ::-1]
+        image_surface = pygame.surfarray.make_surface(array.swapaxes(0, 1))
+        if blend:
+            image_surface.set_alpha(100)
+        surface.blit(image_surface, (0, 0))
 
     def destroy_sensors(self):
         self.camera_manager.sensor.destroy()
@@ -898,6 +906,7 @@ def game_loop(args):
         display = pygame.display.set_mode(
             (args.width, args.height),
             pygame.HWSURFACE | pygame.DOUBLEBUF)
+        font = get_font()
 
         hud = HUD(args.width, args.height)
         world = World(client.get_world(), hud, args)
@@ -930,7 +939,14 @@ def game_loop(args):
                 
                 snapshot, img_raw, depth_raw, ss_raw, lidar_raw, imu_raw, gnss_raw = sync_mode.tick(timeout=2.0)
                 # img_raw = CameraManager._parse_image(world.camera_manager, img_raw)
-                world.render(img_raw)
+                world.render(display , img_raw)
+                fps = round(1.0 / snapshot.timestamp.delta_seconds)
+                display.blit(
+                    font.render('% 5d FPS (real)' % clock.get_fps(), True, (255, 255, 255)),
+                    (8, 10))
+                display.blit(
+                    font.render('% 5d FPS (simulated)' % fps, True, (255, 255, 255)),
+                    (8, 28))
 
                 pygame.display.flip()
 
