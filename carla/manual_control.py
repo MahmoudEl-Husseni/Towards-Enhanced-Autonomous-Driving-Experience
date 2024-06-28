@@ -185,6 +185,9 @@ class World(object):
 
     def render(self, display):
         self.camera_manager.render(display)
+        # self.depth_camera.render(display)
+        # self.ss_camera.render(display)
+        # self.lidar_sensor.render(display)
         self.hud.render(display)
 
     def destroy_sensors(self):
@@ -735,6 +738,11 @@ class GnssSensor(object):
         self.sensor = world.spawn_actor(bp, carla.Transform(
             carla.Location(x=1.0, z=2.8)), attach_to=self._parent)
 
+    def _on_gnss_event(self, event):
+        self.lat = event.latitude
+        self.lon = event.longitude
+
+
 # ==============================================================================
 # -- IMUSensor -----------------------------------------------------------------
 # ==============================================================================
@@ -751,7 +759,19 @@ class IMUSensor(object):
         bp = world.get_blueprint_library().find('sensor.other.imu')
         self.sensor = world.spawn_actor(
             bp, carla.Transform(), attach_to=self._parent)
-
+    def _IMU_callback(self, sensor_data):
+        limits = (-99.9, 99.9)
+        self.accelerometer = (
+            max(limits[0], min(limits[1], sensor_data.accelerometer.x)),
+            max(limits[0], min(limits[1], sensor_data.accelerometer.y)),
+            max(limits[0], min(limits[1], sensor_data.accelerometer.z)))
+        self.gyroscope = (
+            max(limits[0], min(limits[1], math.degrees(
+                sensor_data.gyroscope.x))),
+            max(limits[0], min(limits[1], math.degrees(
+                sensor_data.gyroscope.y))),
+            max(limits[0], min(limits[1], math.degrees(sensor_data.gyroscope.z))))
+        self.compass = math.degrees(sensor_data.compass)
 
 
 # ==============================================================================
@@ -879,6 +899,44 @@ class CameraManager(object):
     def render(self, display):
         if self.surface is not None:
             display.blit(self.surface, (0, 0))
+    def _parse_image(self , image):
+        if self.sensors[self.index][0].startswith('sensor.lidar'):
+            points = np.frombuffer(image.raw_data, dtype=np.dtype('f4'))
+            points = np.reshape(points, (int(points.shape[0] / 4), 4))
+            lidar_data = np.array(points[:, :2])
+            lidar_data *= min(self.hud.dim) / (2.0 * self.lidar_range)
+            lidar_data += (0.5 * self.hud.dim[0], 0.5 * self.hud.dim[1])
+            lidar_data = np.fabs(lidar_data)  # pylint: disable=E1111
+            lidar_data = lidar_data.astype(np.int32)
+            lidar_data = np.reshape(lidar_data, (-1, 2))
+            lidar_img_size = (self.hud.dim[0], self.hud.dim[1], 3)
+            lidar_img = np.zeros((lidar_img_size), dtype=np.uint8)
+            lidar_img[tuple(lidar_data.T)] = (255, 255, 255)
+            self.surface = pygame.surfarray.make_surface(lidar_img)
+        elif self.sensors[self.index][0].startswith('sensor.camera.dvs'):
+            # Example of converting the raw_data from a carla.DVSEventArray
+            # sensor into a NumPy array and using it as an image
+            dvs_events = np.frombuffer(image.raw_data, dtype=np.dtype([
+                ('x', np.uint16), ('y', np.uint16), ('t', np.int64), ('pol', np.bool)]))
+            dvs_img = np.zeros((image.height, image.width, 3), dtype=np.uint8)
+            # Blue is positive, red is negative
+            dvs_img[dvs_events[:]['y'], dvs_events[:]
+                    ['x'], dvs_events[:]['pol'] * 2] = 255
+            self.surface = pygame.surfarray.make_surface(
+                    dvs_img.swapaxes(0, 1))
+        else:
+            image.convert(self.sensors[self.index][1])
+            array = np.frombuffer(image.raw_data, dtype=np.dtype("uint8"))
+            array = np.reshape(array, (image.height, image.width, 4))
+            array = array[:, :, :3]
+            array = array[:, :, ::-1]
+            self.surface = pygame.surfarray.make_surface(array.swapaxes(0, 1))
+        if self.recording:
+            if not os.path.exists('_out/%s' % self.sensors[self.index][2]):
+                os.makedirs('_out/%s' % self.sensors[self.index][2])
+            image_path = '_out/%s/%08d.png' %(self.sensors[self.index][2], image.frame)
+            pygame.image.save(self.surface, image_path)
+
 
 
 # ==============================================================================
@@ -898,6 +956,7 @@ def game_loop(args):
         display = pygame.display.set_mode(
             (args.width, args.height),
             pygame.HWSURFACE | pygame.DOUBLEBUF)
+        font = get_font()
 
         hud = HUD(args.width, args.height)
         world = World(client.get_world(), hud, args)
@@ -930,7 +989,14 @@ def game_loop(args):
                 
                 snapshot, img_raw, depth_raw, ss_raw, lidar_raw, imu_raw, gnss_raw = sync_mode.tick(timeout=2.0)
                 # img_raw = CameraManager._parse_image(world.camera_manager, img_raw)
-                world.render(img_raw)
+                world.camera_manager._parse_image(img_raw)
+                world.depth_camera._parse_image(depth_raw)
+                world.ss_camera._parse_image(ss_raw)
+                world.lidar_sensor._parse_image(lidar_raw)
+                world.imu_sensor._IMU_callback(imu_raw)
+                world.gnss_sensor._on_gnss_event(gnss_raw)
+                world.tick(clock)
+                world.render( display )
 
                 pygame.display.flip()
 

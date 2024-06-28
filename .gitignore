@@ -10,3 +10,4 @@ AV/carla_out/*/images
 *.mp4
 *.webm
 *.egg
+*.pyc
