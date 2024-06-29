@@ -831,7 +831,7 @@ class CameraManager(object):
                 'Camera Semantic Segmentation (CityScapes Palette)', {}],
             ['sensor.lidar.ray_cast', None,
                 'Lidar (Ray-Cast)', {'range': '50'}],
-            ['sensor.camera.dvs', cc.Raw, 'Dynamic Vision Sensor', {}],
+            # ['sensor.camera.dvs', cc.Raw, 'Dynamic Vision Sensor', {}],
             ['sensor.camera.rgb', cc.Raw, 'Camera RGB Distorted',
                 {'lens_circle_multiplier': '3.0',
                  'lens_circle_falloff': '3.0',
@@ -966,6 +966,8 @@ def game_loop(args):
         # controller = Controller(world , stm)
         controller = KeyboardControl(world, args.autopilot)
 
+        amp = AMP(world.world, world.player, object_types = None)
+
         clock = pygame.time.Clock()
         i = 0
         with CarlaSyncMode(world.world, 
@@ -990,13 +992,16 @@ def game_loop(args):
                 snapshot, img_raw, depth_raw, ss_raw, lidar_raw, imu_raw, gnss_raw = sync_mode.tick(timeout=2.0)
                 # img_raw = CameraManager._parse_image(world.camera_manager, img_raw)
                 world.camera_manager._parse_image(img_raw)
-                world.depth_camera._parse_image(depth_raw)
-                world.ss_camera._parse_image(ss_raw)
-                world.lidar_sensor._parse_image(lidar_raw)
-                world.imu_sensor._IMU_callback(imu_raw)
-                world.gnss_sensor._on_gnss_event(gnss_raw)
+                # world.depth_camera._parse_image(depth_raw)
+                # world.ss_camera._parse_image(ss_raw)
+                # world.lidar_sensor._parse_image(lidar_raw)
+                # world.imu_sensor._IMU_callback(imu_raw)
+                # world.gnss_sensor._on_gnss_event(gnss_raw)
                 world.tick(clock)
                 world.render( display )
+
+                batch = amp.get_amp_inputs()
+                print(batch)
 
                 pygame.display.flip()
 
