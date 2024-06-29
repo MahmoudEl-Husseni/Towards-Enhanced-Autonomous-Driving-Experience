@@ -64,6 +64,11 @@ from pygame_client import Controller
 class World(object):
     def __init__(self, carla_world, hud, args):
         self.world = carla_world
+        ##############################
+        settings = self.world.get_settings()
+        settings.fixed_delta_seconds = 0.1
+        self.world.apply_settings(settings)
+        ##############################
         self.actor_role_name = args.rolename
         try:
             self.map = self.world.get_map()
@@ -85,6 +90,17 @@ class World(object):
         self.depth_camera = None
         self.ss_camera = None
         self.lidar_sensor = None
+
+        # Localization Setup
+        map_geo = self.world.get_map().transform_to_geolocation(carla.Location(0,0,0))
+        self.geo_centre_lat = kalman_filter.deg_to_rad(map_geo.latitude) 
+        self.geo_centre_lon = kalman_filter.deg_to_rad(map_geo.longitude)
+        self.geo_centre_alt = map_geo.altitude
+        self.gnss_var    = 30
+        self.imu_var_g   = 0.01
+        self.imu_var_a   = 0.05
+        self.kal_obj = None
+
         ##########################
         self._weather_presets = find_weather_presets()
         self._weather_index = 0
@@ -95,6 +111,7 @@ class World(object):
         self.recording_enabled = False
         self.recording_start = 0
         self.constant_velocity_enabled = False
+        self.spectator = self.world.get_spectator()
 
     def restart(self):
         self.player_max_speed = 1.589
@@ -143,8 +160,25 @@ class World(object):
         # Set up the sensors.
         self.collision_sensor = CollisionSensor(self.player, self.hud)
         self.lane_invasion_sensor = LaneInvasionSensor(self.player, self.hud)
-        self.gnss_sensor = GnssSensor(self.player)
-        self.imu_sensor = IMUSensor(self.player)
+
+
+        init_vel    = self.player.get_velocity()
+        init_loc    = self.player.get_location()
+        init_rot    = self.player.get_transform().rotation
+        timestamp   = self.world.get_snapshot().timestamp.elapsed_seconds
+        init_state  = np.asarray([init_loc.x, init_loc.y, init_rot.yaw * np.pi /180, init_vel.x, init_vel.y]).reshape(5,1)
+        self.kal_obj = kalman_filter(init_state, 
+                                    timestamp, 
+                                    self.imu_var_a, 
+                                    self.imu_var_g, 
+                                    self.gnss_var, 
+                                    self.geo_centre_lon,
+                                    self.geo_centre_lat,
+                                    self.geo_centre_alt)
+    
+        self.gnss_sensor = GnssSensor(self.player  , kal_obj = self.kal_obj)
+        self.imu_sensor = IMUSensor(self.player  , kal_obj = self.kal_obj)
+
 
         self.camera_manager = CameraManager(self.player, self.hud, self._gamma)
         self.camera_manager.transform_index = cam_pos_index
@@ -728,19 +762,34 @@ class LaneInvasionSensor(object):
 
 
 class GnssSensor(object):
-    def __init__(self, parent_actor):
+    def __init__(self, parent_actor, kal_obj = None ):
         self.sensor = None
         self._parent = parent_actor
         self.lat = 0.0
         self.lon = 0.0
+        # For timing
+        self.kal_obj = kal_obj
+        self.gnss_to_xyz = kal_obj.gnss_to_xyz
+        self.gnss_time = 0
         world = self._parent.get_world()
+        self.debug = world.debug
         bp = world.get_blueprint_library().find('sensor.other.gnss')
-        self.sensor = world.spawn_actor(bp, carla.Transform(
-            carla.Location(x=1.0, z=2.8)), attach_to=self._parent)
+        bp.set_attribute('sensor_tick', '0.033')
+        self.sensor = world.spawn_actor(bp, carla.Transform(carla.Location(x=1.0, z=2.8)), attach_to=self._parent)
 
-    def _on_gnss_event(self, event):
+    def _on_gnss_event(self  , event):
+        self.gnss_time = event.timestamp
         self.lat = event.latitude
         self.lon = event.longitude
+        last_x , last_y  = self.kal_obj.state[0][0], self.kal_obj.state[1][0]  
+        height = 10
+        last_locathon = carla.Location(x=last_x, y=last_y, z=height)
+        x, y, z = self.gnss_to_xyz(event) 
+        # self.debug.draw_point(carla.Location(x=x, y=y, z=height), size=0.05 , color=carla.Color(r=0, g=255, b=0) ,life_time=0.1)
+        self.kal_obj.measure(np.asarray([x, y]).reshape(2,1), self.gnss_time)
+        x, y = self.kal_obj.state[0][0], self.kal_obj.state[1][0]
+        current_locathon = carla.Location(x=x, y=y, z=height)
+        self.debug.draw_line( last_locathon, current_locathon,thickness=0.1,  color=carla.Color(r=0, g=150, b=0), life_time=20)
 
 
 # ==============================================================================
@@ -749,30 +798,42 @@ class GnssSensor(object):
 
 
 class IMUSensor(object):
-    def __init__(self, parent_actor):
+    def __init__(self, parent_actor, kal_obj = None):
         self.sensor = None
+        # For timing
+        self.kal_obj = kal_obj
+        self.imu_time = 0
         self._parent = parent_actor
         self.accelerometer = (0.0, 0.0, 0.0)
         self.gyroscope = (0.0, 0.0, 0.0)
         self.compass = 0.0
         world = self._parent.get_world()
+        self.debug = world.debug
         bp = world.get_blueprint_library().find('sensor.other.imu')
+        bp.set_attribute('sensor_tick', '0.033')
         self.sensor = world.spawn_actor(
             bp, carla.Transform(), attach_to=self._parent)
     def _IMU_callback(self, sensor_data):
+        self.imu_time = sensor_data.timestamp
         limits = (-99.9, 99.9)
         self.accelerometer = (
             max(limits[0], min(limits[1], sensor_data.accelerometer.x)),
             max(limits[0], min(limits[1], sensor_data.accelerometer.y)),
             max(limits[0], min(limits[1], sensor_data.accelerometer.z)))
         self.gyroscope = (
-            max(limits[0], min(limits[1], math.degrees(
-                sensor_data.gyroscope.x))),
-            max(limits[0], min(limits[1], math.degrees(
-                sensor_data.gyroscope.y))),
+            max(limits[0], min(limits[1], math.degrees(sensor_data.gyroscope.x))),
+            max(limits[0], min(limits[1], math.degrees(sensor_data.gyroscope.y))),
             max(limits[0], min(limits[1], math.degrees(sensor_data.gyroscope.z))))
         self.compass = math.degrees(sensor_data.compass)
-
+        accel_x = self.accelerometer[0]
+        accel_y = self.accelerometer[1]
+        yaw_vel = self.gyroscope[2]
+        last_x , last_y = self.kal_obj.state[0][0], self.kal_obj.state[1][0] 
+        last_locathon = carla.Location(x=last_x, y=last_y, z=10)
+        self.kal_obj.update(np.asarray([accel_x, accel_y, yaw_vel]).reshape(3,1), self.imu_time)
+        x, y= self.kal_obj.state[0][0], self.kal_obj.state[1][0]
+        current_locathon = carla.Location(x=x, y=y, z=10)
+        self.debug.draw_line( last_locathon, current_locathon, thickness=0.1,  color=carla.Color(r=0, g=150, b=0), life_time=20)
 
 # ==============================================================================
 # -- RadarSensor ---------------------------------------------------------------
@@ -960,6 +1021,7 @@ def game_loop(args):
 
         hud = HUD(args.width, args.height)
         world = World(client.get_world(), hud, args)
+
         # stm = STM(server_IP=('10.182.200.217', 12346),
                 #   STM_IP=('10.182.200.225',  12345) , STM_IP2=('10.182.200.225',  12344))
         # print("STM Initialized..")
@@ -967,7 +1029,6 @@ def game_loop(args):
         controller = KeyboardControl(world, args.autopilot)
 
         clock = pygame.time.Clock()
-        i = 0
         with CarlaSyncMode(world.world, 
                            world.camera_manager, 
                            world.depth_camera, 
@@ -977,7 +1038,6 @@ def game_loop(args):
                            world.gnss_sensor, 
                            fps=30) as sync_mode:
             while True:
-                i += 1
                 clock.tick_busy_loop(60)
 
                 if isinstance(controller, Controller):
@@ -995,6 +1055,10 @@ def game_loop(args):
                 world.lidar_sensor._parse_image(lidar_raw)
                 world.imu_sensor._IMU_callback(imu_raw)
                 world.gnss_sensor._on_gnss_event(gnss_raw)
+                player_location = world.player.get_location()
+                world.spectator.set_transform(carla.Transform(player_location + carla.Location(z=50),
+                                                          carla.Rotation(pitch=-90)))
+
                 world.tick(clock)
                 world.render( display )
 
