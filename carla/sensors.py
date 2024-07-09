@@ -30,7 +30,7 @@ except IndexError:
     pass
 
 import carla
-from carla import ColorConverter as cc
+# from carla import ColorConverter as cc
 
 from utils import *
 from config import *
@@ -436,19 +436,18 @@ class DepthCamera(object):
         if not self:
             return
 
-        if VERSION<=0.9:
-            self.camera_2_world = get_transform_matrix(self.sensor.get_transform())
-        else : 
-            self.camera_2_world = self.sensor.get_transform().get_matrix()
+        # if VERSION<=0.9:
+        #     self.camera_2_world = get_transform_matrix(self.sensor.get_transform())
+        # else : 
+        #     self.camera_2_world = self.sensor.get_transform().get_matrix()
 
-        self.camera_2_world = np.array(self.camera_2_world).reshape(4, 4)
+        # self.camera_2_world = np.array(self.camera_2_world).reshape(4, 4)
 
         array = np.frombuffer(image.raw_data, dtype=np.dtype("uint8"))
         array = np.reshape(array, (image.height, image.width, 4))
         array = array[:, :, :3]
         array = array[:, :, ::-1]
 
-        # to_display = array
 
         R, G, B = array[:, :, 0], array[:, :, 1], array[:, :, 2]
         normalized = (R + G * 256 + B * 256 * 256) / (256 * 256 * 256 - 1)
@@ -458,13 +457,14 @@ class DepthCamera(object):
         array = array[:, :, None]
         array = np.concatenate((array, array, array), axis=2)
         self.depth_q = array
+        return array
 
 
         self.surface = pygame.surfarray.make_surface(array)
 
-        if self.recording[0]:
-            path = f"_out/depth/{image.frame}.png"
-            image.save_to_disk(path)
+        # if self.recording[0]:
+        #     path = f"_out/depth/{image.frame}.png"
+        #     image.save_to_disk(path)
 
 
         # generate map

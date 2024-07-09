@@ -1,5 +1,5 @@
 import numpy as np
-from .amp_config import *
+from amp_config import *
 
 
 class Object_Tracking : 
@@ -38,8 +38,8 @@ class Object_Tracking :
                 vel = npc.get_velocity()
 
                 dist = npc.get_transform().location.distance(self.parent.get_transform().location)
-                # if dist < 50:
-                if True: 
+                if dist < 100:
+                # if True: 
                     forward_vec = self.parent.get_transform().get_forward_vector()
                     forward_vec = np.array([forward_vec.x, forward_vec.y, forward_vec.z])
                     ray = npc.get_transform().location - self.parent.get_transform().location
@@ -47,11 +47,14 @@ class Object_Tracking :
 
                     # if forward_vec.dot(ray) > 1:
                     if True:
-                        obj_info = [npc.get_transform().location.x, 
-                                    npc.get_transform().location.y, 
-                                    npc.get_transform().rotation.yaw,
-                                    vel.x, 
-                                    vel.y, 
+                        # multiplying x, y by 2 to approximate the argoverse distribution
+                        # multiplying vx, vy by 10 to approximate the argoverse distribution
+                        
+                        obj_info = [npc.get_transform().location.x * 2, 
+                                    npc.get_transform().location.y * 2, 
+                                    npc.get_transform().rotation.yaw * np.pi/180,
+                                    vel.x * 10, 
+                                    vel.y * 10, 
                                     carla_object_type[obj_type]]
                         
                         objects_info = np.vstack((objects_info, obj_info))
@@ -119,6 +122,7 @@ class Object_Tracking :
         xe = object_info[1:, 0]
         ye = object_info[1:, 1]
         ts = np.arange(0, object_info.shape[0]-1)
+        print(ts)
 
         distances = np.linalg.norm(object_info[:, :2] - player_loc, axis=1).reshape(-1, 1)
         distances = (distances[:-1, 0] + distances[:1, 0])/2
@@ -138,6 +142,32 @@ class Object_Tracking :
         object_type = object_info[:-1, 5]
 
         return np.vstack((xs, ys, xe, ye, ts, distances, angles, vx, vy, yaw, object_type)).T
+    
+    def calc_distance(self, object_vectors) :
+        '''
+        Calculate the distance between the objects over time
+        Parametrs: 
+        ----------
+        object_vectors : np.array
+            Array of shape (n, T, 11) where n is the number of objects in the world
+
+            [xs, ys, xe, ye, ts, Distance, angle from agent, vx, vy, yaw, object_type]
+
+        Returns
+        -------
+        np.array
+            Array of shape (n, n, T) where n is the number of objects in the world
+            and T is the number of time steps
+
+        ''' 
+        object_vectors = object_vectors[:, :, :2]
+        T = object_vectors.shape[1]
+        n = object_vectors.shape[0]
+        DIST = np.zeros((n, n, T))
+        for i in range(n) :
+            DIST[i, :, :] = np.linalg.norm(object_vectors - object_vectors[i], axis=2)
+        
+        return DIST
     
 
     def vectorize_objects (self, object_ids, player_loc) : 
@@ -168,7 +198,11 @@ class Object_Tracking :
             _vector = self._vectorize_obj(self.tracks[key], player_loc)[None, ...]
             objects_vectors = np.vstack((objects_vectors, _vector))
 
-        return objects_vectors
+
+        # calculate Distance matrix
+        distance_matrix = self.calc_distance(objects_vectors)
+        
+        return objects_vectors, distance_matrix
         
 
 if __name__ == '__main__':

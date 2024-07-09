@@ -409,10 +409,10 @@ def game_loop(args):
         print("Carla Connected")        
         # amp = AMP(world.world, world.player, object_types = None)
 
-        stm = STM()
-        print("STM Initialized..")
-        controller = Controller(stm, world, client)
-        # controller = KeyboardControl(world, args.autopilot)
+        # stm = STM()
+        # print("STM Initialized..")
+        # controller = Controller(stm, world, client)
+        controller = KeyboardControl(world, args.autopilot)
 
         
         clock = pygame.time.Clock()

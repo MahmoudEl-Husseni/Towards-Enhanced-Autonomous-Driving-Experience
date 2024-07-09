@@ -54,7 +54,7 @@ except IndexError:
     pass
 import carla
 
-from carla import ColorConverter as cc
+# from carla import ColorConverter as cc
 
 
 import collections

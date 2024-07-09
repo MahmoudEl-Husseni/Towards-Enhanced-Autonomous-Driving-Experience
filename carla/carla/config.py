@@ -1,0 +1,45 @@
+DA_MAX_QUEUE_SIZE=5
+EGO_MAX_QUEUE_SIZE=60
+
+# Sensor configs
+VERSION=1.5
+
+if VERSION==0.9: 
+    LIDAR_CHANNELS=3
+    LIDAR_ATTENUATION=0.004	
+else : 
+    LIDAR_CHANNELS=4
+
+
+
+# Mapping configs
+MAP_WIDTH = 1280
+MAP_HEIGHT = 720
+
+CARLA_LOGO_SIZE = 50
+
+class WORLD_BOUNDING : 
+    x1=-250
+    x2=250
+    y1=-250
+    y2=250
+
+DEBUG=False
+DEBUG_TIME=False
+
+DRAW_EGO=True
+DRAW_DA=False
+DRAW_BBOX=True
+DRAW_LANELINES=True
+
+MAP_SS = False
+MAP_DEPTH = True
+MAP_LIDAR = True
+MAP_LOCALIZATION = True
+
+
+TRAFFIC_SIGN_YOLO=True
+TRAFFIC_SIGN_YOLO_WEIGHTS='best_2_7_2024.pt'
+
+
+DEVICE='cuda:0'

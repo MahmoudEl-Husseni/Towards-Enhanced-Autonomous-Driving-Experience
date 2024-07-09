@@ -19,7 +19,7 @@ import carla
 
 
 
-def get_dummy_lane_lines (world : carla.World) -> list:
+def get_dummy_lane_lines (world) -> list:
     carla_map = world.get_map()
     road_segments = carla_map.get_topology ()
     lane_lines = []

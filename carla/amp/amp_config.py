@@ -95,15 +95,16 @@ carla_objects_bp = {
     'Buses'                 : Buses,
     'Bicycle' 		        : Bicycle,
     'Motorcycle'            : Motorcycle,
-    'Pedestrian'            : Pedestrian,
+    # 'Pedestrian'            : Pedestrian,
     'static'                : static,
 }
 
 LANE_NEAR_DISTANCE=50
-OBJECT_TRACK_LENGTH=61
-OBJECT_NEAR_DISTANCE=30
+OBJECT_TRACK_LENGTH=5
+OBJECT_NEAR_DISTANCE=300
+CANDIDATE_DENSITY_RANGE=270
 
-CKPT_PATH = '/main/Argoverse Dataset/out2/Argo-1_out/ckpt/argo-normattn-best_model.pth'
+CKPT_PATH = '/media/mahmoud/New Volume/faculty/level2/study/machine learning/Towards Enhanced Autonomous Vehicle/carla/amp/VectorNet/Argoverse2/argo-1-best_model.pth'
 
 N_TRAJ=6
 N_FUTURE=50
