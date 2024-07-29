@@ -1,3 +1,59 @@
+"""
+Training and Evaluation Script for VectorNet Model
+
+This script is responsible for training and validating the VectorNet model for motion prediction tasks. It includes functionalities for loading datasets, training the model, evaluating performance metrics, saving checkpoints, and logging results using TensorBoard.
+
+The script performs the following main tasks:
+
+1. **Data Preparation**:
+    - Loads training and validation datasets based on the specified experiment configuration.
+    - Uses DataLoader to batch and shuffle data for training and validation.
+
+2. **Model Configuration**:
+    - Initializes the VectorNet model.
+    - Sets up the optimizer (Adam) and the learning rate scheduler (CosineAnnealingLR).
+
+3. **Training Loop**:
+    - Performs training over multiple epochs.
+    - Logs training metrics and model parameters using TensorBoard.
+    - Saves checkpoints and updates the best model based on the lowest validation loss.
+
+4. **Validation Loop**:
+    - Evaluates the model on validation data.
+    - Logs validation metrics using TensorBoard.
+
+5. **Checkpoint Management**:
+    - Saves model checkpoints at regular intervals and keeps track of the best model based on validation loss.
+
+6. **Metrics Calculation**:
+    - Calculates and logs various metrics such as negative log likelihood, mean displacement error, and final displacement error.
+
+Dependencies:
+    - PyTorch
+    - TensorBoard
+    - Custom modules from the project (e.g., `loss`, `utils`, `Vectornet`)
+
+Usage:
+    Run this script directly to start training and evaluating the VectorNet model. Ensure that all necessary configurations and dependencies are correctly set up.
+
+Command-line Execution:
+    The script does not require command-line arguments. Configuration should be handled via the `config` module and script variables.
+
+Example:
+    python train_vectornet.py
+
+Modules:
+    - `train_one_batch`: Trains the model for one batch and calculates loss and metrics.
+    - `train_from_last_ckpt`: Manages training from the last checkpoint, including saving and loading checkpoints.
+    - `eval_metrics`: Evaluates and returns performance metrics.
+    - `get_min_loss`: Retrieves the minimum loss from the best logs file.
+    
+Note:
+    - The script assumes that the `VectorNet` model and associated utility functions are defined in the project's directory.
+    - Logs and checkpoints are saved to directories specified in the configuration.
+
+"""
+
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 

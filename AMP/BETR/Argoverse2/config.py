@@ -1,3 +1,76 @@
+"""
+Configuration settings for the Autonomous Driving Project.
+
+This file contains all the configuration parameters used throughout the project. These settings include directories for data storage, model hyperparameters, statistical paths, padding parameters, and various encodings used in the model architecture.
+
+Attributes:
+    EXPERIMENT_NAME (str): The name of the current experiment.
+    MAIN_DIR (str): The main directory where the Argoverse Dataset is stored.
+    TRAIN_DIR (str): The directory for training data.
+    VAL_DIR (str): The directory for validation data.
+    TEST_DIR (str): The directory for test data.
+    OUT_DIR (str): The directory for output files specific to the current experiment.
+    TB_DIR (str): The directory for TensorBoard logs.
+    CKPT_DIR (str): The directory for model checkpoints.
+
+    N_PAST (int): The number of past time steps considered in the model.
+    N_FUTURE (int): The number of future time steps predicted by the model.
+    RADIUS_OFFSET (float): Offset value for the radius of radius which defines scene boundaries.
+    VELOCITY_DISTANCE_RATIO (int): Ratio used to calculate velocity from distance.
+    TRAJ_DT (float): Time delta for temporal vectors.
+    LANE_DL (float): Length delta for spatial vectors.
+
+    ARGO_PAST_TIME (int): Past time window for Argoverse data.
+    ARGO_SAMPLE_RATE (int): Sample rate for Argoverse data.
+
+    EPOCHS (int): Number of training epochs.
+    LOG_STEP (int): Step interval for logging.
+    STEPS_PER_EPOCH (int): Number of steps per epoch.
+
+    DEVICE (str): Device used for computation ('cuda' or 'cpu').
+    CKPT_EPOCH (int): Interval for saving checkpoints.
+
+    TRAIN_BS (int): Batch size for training.
+    VAL_BS (int): Batch size for validation.
+    LR (float): Learning rate for the optimizer.
+
+    LANE_MEANS (str): Path to lane means statistics file.
+    LANE_STDS (str): Path to lane standard deviations statistics file.
+    AGENT_MEANS (str): Path to agent means statistics file.
+    AGENT_STDS (str): Path to agent standard deviations statistics file.
+    OBJ_MEANS (str): Path to object means statistics file.
+    OBJ_STDS (str): Path to object standard deviations statistics file.
+    GT_MEANS (str): Path to ground truth means statistics file.
+    GT_STDS (str): Path to ground truth standard deviations statistics file.
+
+    OBJ_PAD_LEN (int): Padding length for object data.
+    LANE_PAD_LEN (int): Padding length for lane data.
+
+    track_category_mapping (dict): Mapping of track categories to descriptive names.
+    object_color_code (dict): Color codes for different object types.
+    map_object_type (dict): Mapping of object types to numerical values.
+
+    OUT_ENC_DIM (int): Output encoding dimension.
+    N_TRAJ (int): Number of trajectories.
+    OUT_DIM (int): Output dimension.
+
+    AGENT_ENC (dict): Configuration for agent encoder.
+    OBJ_ENC (dict): Configuration for object encoder.
+    LANE_ENC (dict): Configuration for lane encoder.
+    GRAPH_AGENT_ENC (dict): Configuration for graph-based agent encoder.
+    GRAPH_OBJ_ENC (dict): Configuration for graph-based object encoder.
+    GRAPH_LANE_ENC (dict): Configuration for graph-based lane encoder.
+    GLOBAL_ENC (dict): Configuration for global encoder.
+    GLOBAL_ENC_TRANS (dict): Configuration for global encoder transformer.
+    DECODER (dict): Configuration for decoder.
+
+    blk (str): Style code for bright black text.
+    red (str): Style code for bright red text.
+    blu (str): Style code for bright blue text.
+    grn_bck (str): Style code for green background.
+    res (str): Style reset code.
+"""
+
 import os 
 from colorama import Fore, Back, Style
 
