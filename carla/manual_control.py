@@ -1062,12 +1062,12 @@ def game_loop(args):
 
                 # snapshot, img_raw, depth_raw, ss_raw, lidar_raw, imu_raw, gnss_raw = sync_mode.tick(timeout=2.0)
                 # img_raw = CameraManager._parse_image(world.camera_manager, img_raw)
-                # world.camera_manager._parse_image(img_raw)
-                # world.depth_camera._parse_image(depth_raw)
-                # world.ss_camera._parse_image(ss_raw)
-                # world.lidar_sensor._parse_image(lidar_raw)
-                # world.imu_sensor._IMU_callback(imu_raw)
-                # world.gnss_sensor._on_gnss_event(gnss_raw)
+                world.camera_manager._parse_image(img_raw)
+                world.depth_camera._parse_image(depth_raw)
+                world.ss_camera._parse_image(ss_raw)
+                world.lidar_sensor._parse_image(lidar_raw)
+                world.imu_sensor._IMU_callback(imu_raw)
+                world.gnss_sensor._on_gnss_event(gnss_raw)
                 player_location = world.player.get_location()
                 world.spectator.set_transform(carla.Transform(player_location + carla.Location(z=50),
                                                           carla.Rotation(pitch=-90)))
