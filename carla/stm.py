@@ -10,16 +10,18 @@ class STM(object):
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.sock.bind(self.server_IP)
 
-        def send(self, autoP, speed, collision, aGear, BL, BR, handBrake):
+        def send(self, autoPilot, speed, gear, throttle, steer, brake, leftBlinker, reftBlinker ,warning ,alert):
             data = {
+                "autoPilot": autoPilot,
                 "speed": speed,
-                "alert": collision,
-                "autoPilot": int(autoP),
-                "autoGear": aGear,
-                "leftBlink": BL,
-                "rightBlink": BR,
-                "warning": 0,
-                "handBrake": int(handBrake)
+                "gear": gear,
+                "throttle": throttle,
+                "steer": steer,
+                "brake": brake,
+                "leftBlinker": leftBlinker,
+                "reftBlinker": reftBlinker,
+                "warning": warning,
+                "alert": alert,
             }
             try :
                 json_data = json.dumps(data)

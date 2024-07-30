@@ -1,0 +1,130 @@
+from config import *
+
+import numpy as np
+import pandas as pd
+from matplotlib import pyplot as plt
+import plotly.graph_objects as go
+
+def draw_circle(fig, ax, center, radius):
+    """
+    Draws a circle on a matplotlib axis.
+
+    Args:
+        fig (plt.Figure): The matplotlib figure.
+        ax (plt.Axes): The matplotlib axis on which to draw the circle.
+        center (tuple): The (x, y) coordinates of the circle's center.
+        radius (float): The radius of the circle.
+
+    Returns:
+        tuple: The updated figure and axis.
+    """
+    circle = plt.Circle(center, radius, edgecolor='k', facecolor='none')
+    ax.add_patch(circle)
+    ax.set_aspect('equal', adjustable='box')
+    return fig, ax
+
+def plot_map(avm, t_ids, df):
+    """
+    Plots a map with lane segments and object positions.
+
+    Args:
+        avm (object): The AVM (Automated Vehicle Map) object with methods to retrieve lane segments.
+        t_ids (list): List of track IDs to plot.
+        df (pd.DataFrame): DataFrame containing tracking data with 'track_id', 'position_x', 'position_y', and 'object_type'.
+
+    Returns:
+        tuple: The matplotlib figure and axis.
+    """
+    fig, ax = plt.subplots(figsize=(20, 12))
+    lane_ids = avm.get_scenario_lane_segment_ids()
+
+    for lane_id in lane_ids:
+        lane_polygon = avm.get_lane_segment_polygon(lane_id)
+        ax.plot(lane_polygon[:, 0], lane_polygon[:, 1], color='b')
+
+    for track_id in t_ids:
+        df_ = df.loc[df['track_id'] == track_id]
+        ax.scatter(df_['position_x'], df_['position_y'], color=object_color_code[df_['object_type'].iloc[0]])
+
+    ax.set_xticks([])
+    ax.set_yticks([])
+
+    markers = [plt.Line2D([0, 0], [0, 0], color=color, marker='o', linestyle='') for color in object_color_code.values()]
+    ax.legend(markers, object_color_code.keys(), numpoints=1, loc='upper left')
+
+    return fig, ax
+
+def plot_track(df: pd.DataFrame, track_id: str, colormap='RdBu'):
+    """
+    Plots the trajectory of a specific track ID with velocity color coding.
+
+    Args:
+        df (pd.DataFrame): DataFrame containing tracking data.
+        track_id (str): The ID of the track to plot.
+        colormap (str, optional): Colormap for the velocity. Defaults to 'RdBu'.
+
+    Returns:
+        None: Displays the plot.
+    """
+    df_ = df.loc[df['track_id'] == track_id]
+    df_.sort_values(by='timestep', ascending=False)
+    x = df_['position_x']
+    y = df_['position_y']
+    velocity = np.linalg.norm(df_[['velocity_x', 'velocity_y']], axis=1)
+    displacement = np.linalg.norm(np.abs(df_[["position_x", "position_y"]].iloc[-1] - df_[["position_x", "position_y"]].iloc[0]))
+    trace = go.Scatter(x=x, y=y,
+                       mode='markers',
+                       marker=dict(
+                           size=10,
+                           color=-velocity,
+                           colorscale=colormap,
+                           colorbar=dict(title='Velocity')),
+                       hovertext=[f"v: {v:0.5f}<br>t: {str(t)}" for v, t in zip(velocity, df_["timestep"].values)]
+                       )
+    layout = go.Layout(
+        title=f'''
+        Trajectory of Object: <b>{track_id}</b>
+        <br>Type of Object: <b>{df_["object_type"].iloc[0]}</b>
+        &nbsp;Object Category: <b>{track_category_mapping[df_["object_category"].iloc[0]]}</b>
+        <br># Frames: <b>{len(df_)}</b>
+        &nbsp;Avg. Velocity: <b>{np.mean(velocity):0.5f}</b>
+        &nbsp;Total Displacement: <b>{displacement:0.5f}</b>
+        &nbsp;Mean Heading: <b>{np.mean(df_['heading']):0.5f}</b>
+        ''',
+        xaxis=dict(showgrid=False, showticklabels=False,
+                   mirror=True,
+                   linecolor='white',
+                   tickfont=dict(color='white'),
+                   ),
+        yaxis=dict(showgrid=False, showticklabels=False,
+                   mirror=True,
+                   linecolor='white',
+                   tickfont=dict(color='white'),
+                   ),
+        paper_bgcolor='black',
+        plot_bgcolor='black',
+        font=dict(color='white')
+    )
+
+    fig = go.Figure(data=[trace], layout=layout)
+    fig.show()
+
+def progress_bar(i, train_set_len, train_bs, length=70):
+    """
+    Displays a progress bar indicating the completion of a training step.
+
+    Args:
+        i (int): The current training step.
+        train_set_len (int): Total length of the training set.
+        train_bs (int): Batch size.
+        length (int, optional): The length of the progress bar in characters. Defaults to 70.
+
+    Returns:
+        str: A string representing the progress bar.
+    """
+    train_steps = (train_set_len / train_bs).__ceil__()
+
+    progress = (i + 1) / train_steps
+    eq = '='
+    progress_bar = f"{red}{'progress:'}{res} {(f'{(progress * 100):.2f}' + ' %').ljust(7)} [{f'{eq * int(i * length / train_steps)}>'.ljust(length)}]"
+    return progress_bar
