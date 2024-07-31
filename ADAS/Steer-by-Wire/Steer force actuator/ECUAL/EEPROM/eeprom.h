@@ -109,10 +109,10 @@ std_return_type eeprom_init(const eeprom_t *eeprom_instance);
 std_return_type eeprom_reset(const eeprom_t *eeprom_instance);
 std_return_type eeprom_read(const eeprom_t *eeprom_instance , uint16_t address ,
 							uint16_t offset,
-							uint32_t *read_value) ;
+							int32_t *read_value) ;
 std_return_type eeprom_write(const eeprom_t *eeprom_instance  ,uint16_t address
 							, uint16_t offset ,
-							uint32_t write_value );
+							int32_t write_value );
 
 std_return_type eeprom_page_erase (const eeprom_t *eeprom_instance ,
 									uint8_t page_number);

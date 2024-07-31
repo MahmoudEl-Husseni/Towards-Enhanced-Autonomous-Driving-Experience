@@ -18,8 +18,8 @@
 
  /* Select I2C Bus selection  */
 
-//#define I2C_1
-#define I2C_2
+#define I2C_BUS_1 0
+#define I2C_BUS_2 1
 
 
 

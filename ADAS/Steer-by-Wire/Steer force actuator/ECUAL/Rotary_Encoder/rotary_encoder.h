@@ -57,9 +57,7 @@ typedef struct {
 }rotary_encoder_t;
 
 
-/* ------ Section  : Private Functions  ------- */
-static void encoder_htim_par (TIM_HandleTypeDef * htim ,
-							  TIM_Encoder_InitTypeDef *sConf );
+
 
 #endif/* DEF_TIM_ENCODE */
 
